@@ -1,0 +1,1 @@
+//resend is a email sending platforn platform/api designed mainely for developers
