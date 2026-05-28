@@ -3,13 +3,12 @@ import { authOptions } from "../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/modal/user";
 import mongoose from "mongoose";
-import { success } from "zod";
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ messageid: string }> },
 ) {
-  const { username, content } = await request.json();
-
+ 
   try {
     await dbConnect();
     const session = await getServerSession(authOptions);
