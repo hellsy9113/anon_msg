@@ -1,16 +1,17 @@
 import { getServerSession, User } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/options";
+import { authOptions } from "../../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/modal/user";
 import mongoose from "mongoose";
+import { NextRequest } from "next/server";
 
 export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ messageid: string }> },
+  request: NextRequest,
+  { params }: { params: Promise<{ messageid: string }> }
 ) {
- 
   try {
     await dbConnect();
+
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
@@ -19,14 +20,25 @@ export async function POST(
           success: false,
           message: "Not authenticated",
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
+
     const user: User = session.user as User;
 
     const { messageid } = await params;
-    const body = await request.json();
 
+    if (!mongoose.Types.ObjectId.isValid(messageid)) {
+      return Response.json(
+        {
+          success: false,
+          message: "Invalid message id",
+        },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
     const { content } = body;
 
     if (!content) {
@@ -35,7 +47,7 @@ export async function POST(
           success: false,
           message: "Reply content required",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -54,10 +66,10 @@ export async function POST(
       },
       {
         new: true,
-      },
+      }
     );
 
-      if (!updatedUserWithReply) {
+    if (!updatedUserWithReply) {
       return Response.json(
         {
           success: false,
@@ -66,7 +78,8 @@ export async function POST(
         { status: 404 }
       );
     }
-     return Response.json(
+
+    return Response.json(
       {
         success: true,
         message: "Reply added successfully",
@@ -74,10 +87,14 @@ export async function POST(
       { status: 200 }
     );
   } catch (error) {
+    console.error("Error adding reply:", error);
 
-    return Response.json({
-      success:false,
-      message:"error adding reply"
-    },{status:500})
+    return Response.json(
+      {
+        success: false,
+        message: "Error adding reply",
+      },
+      { status: 500 }
+    );
   }
 }
