@@ -1,5 +1,5 @@
 import { getServerSession, User } from "next-auth";
-import { authOptions } from "../../api/auth/[...nextauth]/options";
+import { authOptions } from "../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/modal/user";
 import mongoose from "mongoose";
