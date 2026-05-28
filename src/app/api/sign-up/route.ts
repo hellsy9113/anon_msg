@@ -3,6 +3,7 @@ import UserModel from "@/modal/user";
 import bcrypt from "bcrypt";
 
 import { sendVerificationEmail } from "@/helper/sendVerificationEmail";
+import { NextResponse } from "next/server";
 
 //it is necssry to name the name the function post.as  route files use named export to 
 // determine which HTTP methods are supported
@@ -35,13 +36,10 @@ export async function POST(request: Request) {
       isVerified: true,
     });
     if (existingUserVerifiedByUsername) {
-      return Response.json(
-        {
-          success: true,
+      return NextResponse.json({
+          success: false,
           message: "username is already taken",
-        },
-        { status: 400 },
-      );
+        }, { status: 400 });
     }
     const existingUserByEmail = await UserModel.findOne({ email });
 
@@ -49,7 +47,7 @@ export async function POST(request: Request) {
 
     if (existingUserByEmail) {
       if (existingUserByEmail.isVerified) {
-        return Response.json(
+        return NextResponse.json(
           {
             success: false,
             message: "user already exists with this email",
@@ -117,9 +115,7 @@ export async function POST(request: Request) {
 // | Used in code      | Used in transfer/storage |
 
 
-    return new Response(JSON.stringify({ success: false, message: error }), {
-      status: 500,
-    });
+    return NextResponse.json({ success: false, message: error }, { status: 500 });
   }
 }
 
