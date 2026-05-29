@@ -49,12 +49,12 @@ const MessageCard = ({
   const handleDeleteConfirm = async () => {
     try {
       const response = await axios.delete<ApiResponse>(
-        `/api/delete-message/${message._id.toString()}`
+        `/api/delete-message/${message._id?.toString()}`
       );
 
       toast.success(response.data.message);
 
-      onMessageDelete(message._id.toString());
+      onMessageDelete(message._id?.toString() as string);
 
     } catch (error) {
       toast.error("Failed to delete message");
@@ -71,7 +71,7 @@ const MessageCard = ({
       setLoading(true);
 
       const response = await axios.post<ApiResponse>(
-        `/api/reply-message/${message._id.toString()}`,
+        `/api/reply-message/${message._id?.toString()}`,
         {
           content: reply,
         }
