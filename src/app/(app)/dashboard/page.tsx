@@ -214,7 +214,7 @@ if (status === "unauthenticated") {
     setMessages((prevMessages) =>
       prevMessages.filter(
         (message) =>
-          message._id.toString() !== messageId
+          message._id?.toString() !== messageId
       )
     );
   };
@@ -233,23 +233,6 @@ if (status === "unauthenticated") {
     }
   };
 
-  // Session loading
-  if (status === "loading") {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
-    );
-  }
-
-  // Not authenticated
-  if (status !== "authenticated") {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        Please login first
-      </div>
-    );
-  }
 
   return (
     <div className="my-8 mx-4 md:mx-8 lg:mx-auto max-w-6xl rounded-xl border bg-background p-6 shadow-sm">
@@ -339,7 +322,7 @@ if (status === "unauthenticated") {
         {messages.length > 0 ? (
           messages.map((message) => (
             <MessageCard
-              key={message._id.toString()}
+              key={message._id?.toString()}
               message={message}
               onMessageDelete={
                 handleDeleteMessage

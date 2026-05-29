@@ -4,6 +4,7 @@ import mongoose ,{Schema,Document} from "mongoose";
 //ex-string,data,
 import { Reply,ReplySchema} from "./reply";
 export interface Message {
+     _id?: mongoose.Types.ObjectId;
     content:string;
     createdAt:Date;
     replies:Reply[];
