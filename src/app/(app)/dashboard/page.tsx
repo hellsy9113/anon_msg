@@ -38,7 +38,12 @@ import {
   FormItem,
 } from "@/components/ui/form";
 
+import { useRouter } from "next/navigation";
+
 export default function UserDashboard() {
+
+   const router = useRouter();
+
   const [messages, setMessages] = useState<Message[]>([]);
 
   const [isMessagesLoading, setIsMessagesLoading] =
@@ -181,6 +186,26 @@ export default function UserDashboard() {
       setIsSwitchLoading(false);
     }
   };
+
+  useEffect(()=>{
+    if(status=== "unauthenticated")
+    {
+      router.replace("/");
+    }
+  },[status,router]);
+
+
+if (status === "loading") {
+  return (
+    <div className="flex justify-center items-center min-h-screen">
+      <Loader2 className="h-6 w-6 animate-spin" />
+    </div>
+  );
+}
+
+if (status === "unauthenticated") {
+  return null;
+}
 
   // Delete message from UI
   const handleDeleteMessage = (
