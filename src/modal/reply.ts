@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 
-export interface Reply extends Document{
+export interface Reply {
     content:string,
     createdAt:Date;
 }

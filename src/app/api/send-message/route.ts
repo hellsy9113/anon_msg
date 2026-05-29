@@ -1,6 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/modal/user";
-
+import crypto from "crypto"
 import { Message } from "@/modal/user";
 
 export async function POST(request:Request)
@@ -23,13 +23,15 @@ export async function POST(request:Request)
             message:"user is not accepting message"
         },{status:404})  
      }
-     const newMessage={content,createdAt:new Date()}
-     user.messages.push(newMessage as Message)
+      const replyAccessToken= crypto.randomUUID();
+     const newMessage={content,createdAt:new Date(),replyAccessToken,replies:[]}
+     user.messages.push(newMessage)
      await user.save();
 
        return Response.json({
             success:true,
-            message:"message sent successfully"
+            message:"message sent successfully",
+               replyAccessToken,
         },{status:200})   
     }
     catch(error){

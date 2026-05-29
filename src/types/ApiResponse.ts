@@ -4,4 +4,17 @@ export interface ApiResponse{
     message:string,
     isAcceptingMessage?:boolean
     messages?:Array<Message>
+
+  replyAccessToken?: string;
+
+  messageData?: {
+    originalMessage: string;
+
+    createdAt: string;
+
+    replies: {
+      content: string;
+      createdAt: string;
+    }[];
+  };
 }

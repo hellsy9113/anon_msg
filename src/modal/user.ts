@@ -3,7 +3,7 @@ import mongoose ,{Schema,Document} from "mongoose";
 //using interface to define the types of the content
 //ex-string,data,
 import { Reply,ReplySchema} from "./reply";
-export interface Message extends Document{
+export interface Message {
     content:string;
     createdAt:Date;
     replies:Reply[];
@@ -26,7 +26,6 @@ createdAt:{
 replyAccessToken:{
    type:String,
    required:true,
-   unique:true
 }
 })
 

@@ -41,7 +41,7 @@ export async function POST(
     const body = await request.json();
     const { content } = body;
 
-    if (!content) {
+    if (!content || !content.trim()) {
       return Response.json(
         {
           success: false,
