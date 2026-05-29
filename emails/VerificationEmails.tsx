@@ -1,98 +1,112 @@
-// sendVerificationEmail.tsx
+import {
+  Html,
+  Head,
+  Font,
+  Preview,
+  Heading,
+  Row,
+  Section,
+  Text,
+  Container,
+} from "@react-email/components";
 
-import * as React from "react";
-
-/**
- * Email Template Component
- */
 interface VerificationEmailProps {
   username: string;
   otp: string;
 }
 
- const VerificationEmail: React.FC<VerificationEmailProps> = ({
+export default function VerificationEmail({
   username,
   otp,
-}) => {
+}: VerificationEmailProps) {
   return (
-    <html>
-      <head />
-      <body style={styles.body}>
-        <div style={styles.container}>
-          <h1 style={styles.heading}>Verify Your Account</h1>
+    <Html lang="en">
+      <Head>
+        <title>Verification Code</title>
 
-          <p style={styles.text}>Hi {username},</p>
+        <Font
+          fontFamily="Roboto"
+          fallbackFontFamily="Verdana"
+          webFont={{
+            url: "https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2",
+            format: "woff2",
+          }}
+          fontWeight={400}
+          fontStyle="normal"
+        />
+      </Head>
 
-          <p style={styles.text}>
-            Thank you for signing up. Please use the OTP below to verify your
-            email address:
-          </p>
+      <Preview>Your verification code is: {otp}</Preview>
 
-          <div style={styles.otpBox}>
-            <p style={styles.otp}>{otp}</p>
-          </div>
+      <Section
+        style={{
+          backgroundColor: "#f6f9fc",
+          padding: "40px 0",
+        }}
+      >
+        <Container
+          style={{
+            backgroundColor: "#ffffff",
+            padding: "30px",
+            borderRadius: "8px",
+            maxWidth: "500px",
+            margin: "0 auto",
+          }}
+        >
+          <Row>
+            <Heading
+              as="h2"
+              style={{
+                color: "#111827",
+                marginBottom: "20px",
+              }}
+            >
+              Hello {username},
+            </Heading>
+          </Row>
 
-          <p style={styles.text}>
-            This OTP is valid for a limited time. Do not share it with anyone.
-          </p>
+          <Row>
+            <Text
+              style={{
+                fontSize: "16px",
+                color: "#374151",
+                lineHeight: "24px",
+              }}
+            >
+              Thank you for registering. Please use the verification
+              code below to complete your registration.
+            </Text>
+          </Row>
 
-          <hr />
+          <Row>
+            <Text
+              style={{
+                fontSize: "32px",
+                fontWeight: "bold",
+                letterSpacing: "6px",
+                textAlign: "center",
+                color: "#2563eb",
+                margin: "30px 0",
+              }}
+            >
+              {otp}
+            </Text>
+          </Row>
 
-          <p style={styles.footer}>
-            If you didn’t request this, you can safely ignore this email.
-          </p>
-        </div>
-      </body>
-    </html>
+          <Row>
+            <Text
+              style={{
+                fontSize: "14px",
+                color: "#6b7280",
+                lineHeight: "22px",
+              }}
+            >
+              If you did not request this verification code,
+              you can safely ignore this email.
+            </Text>
+          </Row>
+        </Container>
+      </Section>
+    </Html>
   );
-};
-
-/**
- * Function to generate email
- */
-// export function sendVerificationEmail(username: string, otp: string) {
-//   return <VerificationEmail username={username} otp={otp} />;
-// }
-
-/**
- * Styles
- */
-const styles = {
-  body: {
-    backgroundColor: "#f6f9fc",
-    fontFamily: "Arial, sans-serif",
-  },
-  container: {
-    backgroundColor: "#ffffff",
-    padding: "20px",
-    margin: "40px auto",
-    borderRadius: "8px",
-    maxWidth: "500px",
-  },
-  heading: {
-    textAlign: "center" as const,
-    color: "#333",
-  },
-  text: {
-    fontSize: "14px",
-    color: "#555",
-    lineHeight: "1.5",
-  },
-  otpBox: {
-    textAlign: "center" as const,
-    margin: "20px 0",
-  },
-  otp: {
-    fontSize: "28px",
-    fontWeight: "bold",
-    letterSpacing: "4px",
-    color: "#000",
-  },
-  footer: {
-    fontSize: "12px",
-    color: "#999",
-    textAlign: "center" as const,
-  },
-};
-
-export default VerificationEmail;
+}

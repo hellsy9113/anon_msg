@@ -52,7 +52,7 @@ export async function POST(request: Request) {
             success: false,
             message: "user already exists with this email",
           },
-          { status: 201 },
+          { status: 400 },
         );
       }
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
       username,
       verifyCode.toString(),
     );
-
+    console.log("Email response:", emailResponse);
     if (emailResponse.success) {
       return Response.json(
         {
@@ -113,9 +113,16 @@ export async function POST(request: Request) {
 // | `{name:"Akarsh"}` | `'{"name":"Akarsh"}'`    |
 // | Real JS data      | Plain text               |
 // | Used in code      | Used in transfer/storage |
-
-
-    return NextResponse.json({ success: false, message: error }, { status: 500 });
+    return NextResponse.json(
+    {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Something went wrong",
+    },
+    { status: 500 }
+  );
   }
 }
 
