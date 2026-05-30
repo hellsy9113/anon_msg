@@ -98,6 +98,8 @@ export default function SendMessage() {
 
   const [replyAccessToken, setReplyAccessToken] = useState("");
 
+  const [manualToken, setManualToken] = useState("");
+
   const [messageData, setMessageData] = useState<MessageData | null>(null);
 
   const [isLoadingReplies, setIsLoadingReplies] = useState(false);
@@ -166,10 +168,13 @@ export default function SendMessage() {
       });
 
       setMessageData(response.data.messageData);
+
+      return response.data.messageData;
     } catch (error) {
       console.error("Reply fetch error:", error);
 
       toast.error("Failed to fetch replies");
+      return null;
     } finally {
       setIsLoadingReplies(false);
     }
@@ -201,6 +206,35 @@ export default function SendMessage() {
       fetchReplies(latestToken.token);
     }
   }, [username]);
+
+
+   //manual token submit
+  const handleManualTokenFetch = async () => {
+    if (!manualToken.trim()) {
+      toast.error("please enter a token");
+      return;
+    }
+    const data = await fetchReplies(manualToken);
+
+    if (!data) return;
+
+    const existingToken = JSON.parse(
+      localStorage.getItem("replyTokens") || "[]",
+    );
+
+    const exists = existingToken.some((t: any) => t.token === manualToken);
+    if (!exists) {
+      existingToken.push({
+        username,
+        token: manualToken,
+        originalMessage: data.originalMessage,
+        createdAt: new Date().toISOString(),
+      });
+    }
+    localStorage.setItem("replyTokens", JSON.stringify(existingToken));
+
+    setReplyAccessToken(manualToken);
+  };
 
   /* ------------------------------ */
   /* Form submit */
@@ -274,41 +308,44 @@ export default function SendMessage() {
   /* UI */
   /* -------------------------------- */
 
-  return (
-    <div className="container mx-auto my-10 max-w-4xl px-4">
-      <Card className="shadow-xl">
+ return (
+  <div className="container mx-auto my-10 max-w-4xl px-4">
+    <Card className="shadow-xl border-muted">
+      
+      {/* -------------------------- */}
+      {/* Header */}
+      {/* -------------------------- */}
+      <CardHeader className="space-y-2">
+        <h1 className="text-center text-4xl font-bold tracking-tight">
+          Public Profile
+        </h1>
+
+        <p className="text-center text-muted-foreground">
+          Send anonymous messages to <span className="font-medium">@{username}</span>
+        </p>
+      </CardHeader>
+
+      <CardContent className="space-y-10">
+
         {/* -------------------------- */}
-        {/* Header */}
+        {/* Message Form */}
         {/* -------------------------- */}
-
-        <CardHeader>
-          <h1 className="text-center text-4xl font-bold tracking-tight">
-            Public Profile
-          </h1>
-
-          <p className="text-center text-muted-foreground mt-2">
-            Send anonymous messages to @{username}
-          </p>
-        </CardHeader>
-
-        <CardContent className="space-y-8">
-          {/* -------------------------- */}
-          {/* Message Form */}
-          {/* -------------------------- */}
-
+        <section className="space-y-4">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
                 control={form.control}
                 name="content"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Your Anonymous Message</FormLabel>
+                    <FormLabel className="text-base font-medium">
+                      Your Anonymous Message
+                    </FormLabel>
 
                     <FormControl>
                       <Textarea
-                        placeholder="Write your message here..."
-                        className="min-h-[120px] resize-none"
+                        placeholder="Write something thoughtful..."
+                        className="min-h-[130px] resize-none focus-visible:ring-2"
                         {...field}
                       />
                     </FormControl>
@@ -322,11 +359,12 @@ export default function SendMessage() {
                 <Button
                   type="submit"
                   disabled={isSending || !messageContent.trim()}
+                  className="px-6"
                 >
                   {isSending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending
+                      Sending message...
                     </>
                   ) : (
                     "Send Message"
@@ -335,72 +373,119 @@ export default function SendMessage() {
               </div>
             </form>
           </Form>
+        </section>
 
-          {/* -------------------------- */}
-          {/* Suggestions */}
-          {/* -------------------------- */}
+        {/* -------------------------- */}
+        {/* Suggestions */}
+        {/* -------------------------- */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="font-medium">Need inspiration?</p>
 
-          <div className="space-y-4">
-            <div className="flex flex-col gap-2">
-              <Button
-                type="button"
-                onClick={fetchSuggestedMessages}
-                disabled={isSuggestLoading}
-                variant="secondary"
-              >
-                {isSuggestLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating
-                  </>
-                ) : (
-                  "Suggest Messages"
-                )}
-              </Button>
-
-              <p className="text-sm text-muted-foreground">
-                Click a suggestion to use it.
-              </p>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <h3 className="text-xl font-semibold">Suggested Messages</h3>
-              </CardHeader>
-
-              <CardContent className="flex flex-col gap-3">
-                {error ? (
-                  <p className="text-sm text-red-500">{error.message}</p>
-                ) : (
-                  parseMessages(completion).map((message, index) => (
-                    <Button
-                      key={`${message}-${index}`}
-                      type="button"
-                      variant="outline"
-                      className="justify-start whitespace-normal h-auto py-3"
-                      onClick={() => handleMessageClick(message)}
-                    >
-                      {message}
-                    </Button>
-                  ))
-                )}
-              </CardContent>
-            </Card>
+            <Button
+              type="button"
+              onClick={fetchSuggestedMessages}
+              disabled={isSuggestLoading}
+              variant="secondary"
+              className="shrink-0"
+            >
+              {isSuggestLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                "Suggest"
+              )}
+            </Button>
           </div>
 
-          {/* -------------------------- */}
-          {/* Reply Access Section */}
-          {/* -------------------------- */}
+          <Card className="border-dashed">
+            <CardHeader className="pb-2">
+              <h3 className="text-lg font-semibold">
+                Suggested Messages
+              </h3>
+            </CardHeader>
 
-          {replyAccessToken && (
-            <Card>
+            <CardContent className="flex flex-col gap-2">
+              {error ? (
+                <p className="text-sm text-red-500">
+                  {error.message}
+                </p>
+              ) : parseMessages(completion).length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No suggestions yet. Click |Suggest| to generate ideas.
+                </p>
+              ) : (
+                parseMessages(completion).map((message, index) => (
+                  <Button
+                    key={`${message}-${index}`}
+                    type="button"
+                    variant="outline"
+                    className="justify-start whitespace-normal h-auto py-3 text-left"
+                    onClick={() => handleMessageClick(message)}
+                  >
+                    {message}
+                  </Button>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* -------------------------- */}
+        {/* Reply Access */}
+        {/* -------------------------- */}
+        <section className="space-y-4">
+
+          {!replyAccessToken ? (
+            <Card className="border-muted">
               <CardHeader>
-                <h3 className="text-xl font-semibold">Reply Access</h3>
+                <h3 className="text-lg font-semibold">
+                  Access Your Replies
+                </h3>
               </CardHeader>
 
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Save this token to revisit replies later.
+                  Paste your access token to view replies from a previous message.
+                </p>
+
+                <Textarea
+                  placeholder="Enter your reply access token..."
+                  value={manualToken}
+                  onChange={(e) => setManualToken(e.target.value)}
+                  className="resize-none"
+                />
+
+                <Button
+                  type="button"
+                  onClick={handleManualTokenFetch}
+                  disabled={isLoadingReplies}
+                  className="w-full"
+                >
+                  {isLoadingReplies ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Loading replies...
+                    </>
+                  ) : (
+                    "View Replies"
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-green-200">
+              <CardHeader>
+                <h3 className="text-lg font-semibold">
+                  Active Reply Session
+                </h3>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Your current access token:
                 </p>
 
                 <div className="rounded bg-muted p-3 break-all font-mono text-sm">
@@ -411,11 +496,12 @@ export default function SendMessage() {
                   type="button"
                   onClick={() => fetchReplies(replyAccessToken)}
                   disabled={isLoadingReplies}
+                  className="w-full"
                 >
                   {isLoadingReplies ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Loading Replies
+                      Refreshing...
                     </>
                   ) : (
                     "Refresh Replies"
@@ -424,66 +510,75 @@ export default function SendMessage() {
               </CardContent>
             </Card>
           )}
+        </section>
 
-          {/* -------------------------- */}
-          {/* Replies Section */}
-          {/* -------------------------- */}
-
+        {/* -------------------------- */}
+        {/* Replies Section */}
+        {/* -------------------------- */}
+        <section>
           {messageData && (
             <Card>
               <CardHeader>
-                <h3 className="text-xl font-semibold">Replies</h3>
+                <h3 className="text-xl font-semibold">Conversation</h3>
               </CardHeader>
 
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-5">
+
                 {/* Original message */}
+                <div className="rounded-lg border bg-muted/30 p-4">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Your Message
+                  </p>
 
-                <div className="rounded border p-4">
-                  <p className="font-medium">Your Message</p>
-
-                  <p className="mt-2 text-muted-foreground">
+                  <p className="mt-2">
                     {messageData.originalMessage}
                   </p>
                 </div>
 
                 {/* Replies */}
-
                 {messageData.replies.length === 0 ? (
-                  <p className="text-muted-foreground">No replies yet.</p>
+                  <div className="text-center py-6 text-muted-foreground text-sm">
+                    No replies yet. Share your message to get responses.
+                  </div>
                 ) : (
-                  messageData.replies.map((reply, index) => (
-                    <Card key={index}>
-                      <CardContent className="pt-4">
-                        <p>{reply.content}</p>
+                  <div className="space-y-3">
+                    {messageData.replies.map((reply, index) => (
+                      <Card key={index} className="border">
+                        <CardContent className="pt-4">
+                          <p>{reply.content}</p>
 
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {new Date(reply.createdAt).toLocaleString()}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {new Date(reply.createdAt).toLocaleString()}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 )}
               </CardContent>
             </Card>
           )}
+        </section>
 
-          <Separator />
+        <Separator />
 
-          {/* -------------------------- */}
-          {/* CTA */}
-          {/* -------------------------- */}
+        {/* -------------------------- */}
+        {/* CTA */}
+        {/* -------------------------- */}
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">
+            Want your own anonymous message board?
+          </p>
 
-          <div className="text-center space-y-4">
-            <p className="text-muted-foreground">
-              Want your own anonymous message board?
-            </p>
+          <Link href="/sign-up">
+            <Button className="px-6">
+              Create Your Account
+            </Button>
+          </Link>
+        </div>
 
-            <Link href="/sign-up">
-              <Button>Create Your Account</Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+      </CardContent>
+    </Card>
+  </div>
+);
 }
