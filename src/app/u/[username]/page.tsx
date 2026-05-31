@@ -378,7 +378,7 @@ export default function SendMessage() {
         {/* -------------------------- */}
         {/* Suggestions */}
         {/* -------------------------- */}
-        <section className="space-y-4">
+        {/* <section className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="font-medium">Need inspiration?</p>
 
@@ -431,7 +431,7 @@ export default function SendMessage() {
               )}
             </CardContent>
           </Card>
-        </section>
+        </section> */}
 
         {/* -------------------------- */}
         {/* Reply Access */}
