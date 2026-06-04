@@ -5,25 +5,23 @@ import bcrypt from "bcrypt";
 import { sendVerificationEmail } from "@/helper/sendVerificationEmail";
 import { NextResponse } from "next/server";
 
-//it is necssry to name the name the function post.as  route files use named export to 
+//it is necssry to name the name the function post.as  route files use named export to
 // determine which HTTP methods are supported
 export async function POST(request: Request) {
   //request-variable and Request-typescript type of object Request
   //What Is Request?
 
-// Request is a built-in Web API class.
+  // Request is a built-in Web API class.
 
-// It represents the incoming HTTP request.
+  // It represents the incoming HTTP request.
 
-// It contains:
+  // It contains:
 
-// body
-// headers
-// cookies
-// URL
-// method
-
-
+  // body
+  // headers
+  // cookies
+  // URL
+  // method
 
   //wait for dbconnect to check whether the connection
   //instance is presenst .if not ,create new.
@@ -36,10 +34,13 @@ export async function POST(request: Request) {
       isVerified: true,
     });
     if (existingUserVerifiedByUsername) {
-      return NextResponse.json({
+      return NextResponse.json(
+        {
           success: false,
           message: "username is already taken",
-        }, { status: 400 });
+        },
+        { status: 400 },
+      );
     }
     const existingUserByEmail = await UserModel.findOne({ email });
 
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
         );
       }
       const hashedPassword = await bcrypt.hash(password, 10);
-      existingUserByEmail.username=username;
+      existingUserByEmail.username = username;
       existingUserByEmail.password = hashedPassword;
       existingUserByEmail.verifyCode = verifyCode.toString();
       existingUserByEmail.verifyCodeExpiry = new Date(Date.now() + 3600000);
@@ -109,22 +110,18 @@ export async function POST(request: Request) {
     //it need to be converted to string
     //once the backend receive the string.it  reconvert the string to json
     //using .json()
-//     | JavaScript Object | JSON String              |
-// | ----------------- | ------------------------ |
-// | `{name:"Akarsh"}` | `'{"name":"Akarsh"}'`    |
-// | Real JS data      | Plain text               |
-// | Used in code      | Used in transfer/storage |
+    //     | JavaScript Object | JSON String              |
+    // | ----------------- | ------------------------ |
+    // | `{name:"Akarsh"}` | `'{"name":"Akarsh"}'`    |
+    // | Real JS data      | Plain text               |
+    // | Used in code      | Used in transfer/storage |
     return NextResponse.json(
-    {
-      success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Something went wrong",
-    },
-    { status: 500 }
-  );
+      {
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Something went wrong",
+      },
+      { status: 500 },
+    );
   }
 }
-
-

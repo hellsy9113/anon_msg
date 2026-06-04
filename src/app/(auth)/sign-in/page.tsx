@@ -1,17 +1,28 @@
-'use client';
-import { ApiResponse } from "@/types/ApiResponse";
-import { zodResolver } from "@hookform/resolvers/zod";
+"use client";
+
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useDebounceValue } from "usehooks-ts";
-import { Loader2 } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+
 import * as z from "zod";
 
+import { MessageSquare, Loader2 } from "lucide-react";
+
+import { toast } from "sonner";
+
+import { signInSchema } from "@/schemas/signInSchema";
+
 import { Button } from "@/components/ui/button";
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+} from "@/components/ui/card";
+
 import {
   Form,
   FormField,
@@ -19,92 +30,180 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 
-import { signInSchema } from "@/schemas/signInSchema";
+import { Input } from "@/components/ui/input";
 
 export default function SignInForm() {
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof signInSchema>>({
-    resolver: zodResolver(signInSchema),
+  const [isSubmitting, setIsSubmitting] =
+    useState(false);
+
+  const form = useForm<
+    z.infer<typeof signInSchema>
+  >({
+    resolver: zodResolver(
+      signInSchema
+    ),
     defaultValues: {
       identifier: "",
       password: "",
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof signInSchema>) => {
+  const onSubmit = async (
+    data: z.infer<typeof signInSchema>
+  ) => {
     try {
-        const result = await signIn("credentials", {
-      identifier: data.identifier,
-      password: data.password,
-      redirect: false,
-        callbackUrl: "/dashboard",
-    });
+      setIsSubmitting(true);
 
-    if (result?.error) {
-      toast.error(result.error);
-      return;
-    }
+      const result = await signIn(
+        "credentials",
+        {
+          identifier: data.identifier,
+          password: data.password,
+          redirect: false,
+        }
+      );
 
-    toast.success("Signed in successfully");
-   if (result?.ok) {
-  router.replace("/dashboard");
-}
-  
-    } catch (error) {
-        toast.error("Something went wrong");
-        console.error(error);
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success(
+        "Welcome back!"
+      );
+
+      router.replace("/dashboard");
+    } catch {
+      toast.error(
+        "Something went wrong"
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
-        <div className="text-center">
-          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-6">
-            Sign In
-          </h1>
-        </div>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              name="identifier"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Identifier</FormLabel>
-                  <Input {...field} />
-                  <FormMessage />
-                </FormItem>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-primary/10 px-4">
+
+      {/* Background Blur */}
+
+      <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
+
+      <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+
+      <Card className="relative w-full max-w-md border bg-background/80 shadow-2xl backdrop-blur">
+
+        <CardHeader className="space-y-6 text-center">
+
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+
+            <MessageSquare className="h-8 w-8" />
+
+          </div>
+
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight">
+              Welcome Back
+            </h1>
+
+            <p className="mt-2 text-muted-foreground">
+              Sign in to access your
+              anonymous message board.
+            </p>
+          </div>
+
+        </CardHeader>
+
+        <CardContent>
+
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(
+                onSubmit
               )}
-            />
-            <FormField
-              name="password"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <Input {...field} />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit">Verify</Button>
-          </form>
-        </Form>
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            go to Sign-up?{" "}
+              className="space-y-5"
+            >
+
+              <FormField
+                control={form.control}
+                name="identifier"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Username or Email
+                    </FormLabel>
+
+                    <Input
+                      placeholder="john_doe"
+                      {...field}
+                    />
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Password
+                    </FormLabel>
+
+                    <Input
+                      type="password"
+                      placeholder="••••••••"
+                      {...field}
+                    />
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={
+                  isSubmitting
+                }
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing In...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
+              </Button>
+
+            </form>
+          </Form>
+
+          <div className="mt-8 text-center">
+
+            <p className="text-sm text-muted-foreground">
+              New here?
+            </p>
+
             <Link
               href="/sign-up"
-              className="font-medium text-blue-600 hover:text-blue-800"
+              className="mt-2 inline-block font-medium text-primary transition hover:underline"
             >
-              Sign up
+              Create an account
             </Link>
-          </p>
-        </div>
-      </div>
+
+          </div>
+
+        </CardContent>
+
+      </Card>
     </div>
   );
 }

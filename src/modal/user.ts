@@ -12,7 +12,7 @@ export interface Message {
 }
 
 //note-string in ts is small  but in mongoose it is capital
-const MessageSchema:Schema<Message>=new Schema({
+export const MessageSchema:Schema<Message>=new Schema({
 content:{
     type:String,
     required:true   
