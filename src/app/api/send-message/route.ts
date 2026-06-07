@@ -1,7 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/modal/user";
 import crypto from "crypto"
-import { Message } from "@/modal/user";
 
 export async function POST(request:Request)
 {
