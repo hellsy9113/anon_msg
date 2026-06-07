@@ -4,6 +4,7 @@ import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/modal/user";
 
 export async function DELETE(
+  request: Request,
   { params }: { params: Promise<{ messageid: string }> }
 ) {
   try {
