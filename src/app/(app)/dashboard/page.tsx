@@ -9,7 +9,6 @@ import {
   MessageSquare,
   Link2,
   ShieldCheck,
-
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,6 @@ import MessageCard from "@/components/MessageCard";
 
 import { useMessages } from "@/hooks/useMessages";
 import { useAcceptMessages } from "@/hooks/useAcceptMessages";
-// import { useDeleteMessage } from "@/hooks/useDeleteMessage";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -47,9 +45,6 @@ export default function DashboardPage() {
     fetchAcceptMessages,
     updateAcceptMessages,
   } = useAcceptMessages();
-
-  // const{deleteMessage}=useDeleteMessage();
-  
 
   const username =
     session?.user?.username || "";
@@ -254,7 +249,7 @@ export default function DashboardPage() {
               key={message._id?.toString()}
               message={message}
               onMessageDelete={
-                 deleteMessageLocally
+                deleteMessageLocally
               }
             />
           ))}
