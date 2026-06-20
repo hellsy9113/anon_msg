@@ -55,6 +55,7 @@ export async function GET(
       {
         _id: 1,
         content: 1,
+        isAcceptingMessage: 1,
       }
     ).lean();
 
@@ -71,7 +72,10 @@ export async function GET(
     return NextResponse.json(
       {
         success: true,
-        question,
+        question: {
+          ...question,
+          isAcceptingMessage: question.isAcceptingMessage ?? true,
+        },
         owner: {
           username: user.username,
         },

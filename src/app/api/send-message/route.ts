@@ -85,6 +85,16 @@ export async function POST(request: Request) {
                 );
             }
 
+            if (question.isAcceptingMessage === false) {
+                return Response.json(
+                    {
+                        success: false,
+                        message: "This question is not accepting responses right now",
+                    },
+                    { status: 403 }
+                );
+            }
+
             question.messages.push(newMessage);
 
             await question.save();

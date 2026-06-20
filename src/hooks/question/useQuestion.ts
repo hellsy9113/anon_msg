@@ -55,16 +55,18 @@ export function useQuestion(questionId:string)
 
   const [loading,setLoading]=useState(false);
 
-  const fetchQuestion= useCallback(async()=>{
+  const fetchQuestion= useCallback(async(showLoader = true)=>{
     if(!questionId)
       return null;
 
     try{
-      setLoading(true);
+      if (showLoader) {
+        setLoading(true);
+      }
+
       const response=await axios.get<QuestionResponse>(
         `/api/question/${questionId}`
       );
-      console.log(response);
       setQuestion(response.data.question);
 
     }
@@ -80,7 +82,9 @@ export function useQuestion(questionId:string)
         );
       }
     } finally {
-      setLoading(false);
+      if (showLoader) {
+        setLoading(false);
+      }
     }
   },[questionId]);
 
@@ -91,6 +95,7 @@ useEffect(() => {
     fetchQuestion();
   }
 }, [questionId, fetchQuestion]);
+
   const deleteMessageLocally=(messageId:string)=>{
     setQuestion((prev)=>{
       if(!prev)
@@ -103,11 +108,26 @@ useEffect(() => {
         )
       }
     })
-  }
+  };
+
+  const setQuestionAcceptingMessage = (acceptMessages: boolean) => {
+    setQuestion((prev) => {
+      if (!prev) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        isAcceptingMessage: acceptMessages,
+      };
+    });
+  };
+
   return{
      question,
      loading,
      fetchQuestion,
-    deleteMessageLocally
+    deleteMessageLocally,
+    setQuestionAcceptingMessage,
   }
 }
