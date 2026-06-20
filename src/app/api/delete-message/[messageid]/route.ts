@@ -1,7 +1,9 @@
 import { getServerSession, User } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
+import QuesModel from "@/modal/question";
 import UserModel from "@/modal/user";
+import mongoose from "mongoose";
 
 export async function DELETE(
   request: Request,
@@ -27,7 +29,15 @@ export async function DELETE(
     // IMPORTANT
     const { messageid } = await params;
 
-    console.log("Deleting message:", messageid);
+    if (!mongoose.Types.ObjectId.isValid(messageid)) {
+      return Response.json(
+        {
+          success: false,
+          message: "Invalid message id",
+        },
+        { status: 400 }
+      );
+    }
 
     const updateResult = await UserModel.updateOne(
       {
@@ -36,15 +46,36 @@ export async function DELETE(
       {
         $pull: {
           messages: {
-            _id: messageid,
+            _id: new mongoose.Types.ObjectId(messageid),
           },
         },
       }
     );
 
-    console.log(updateResult);
+    if (updateResult.modifiedCount > 0) {
+      return Response.json(
+        {
+          success: true,
+          message: "Message deleted successfully",
+        },
+        { status: 200 }
+      );
+    }
 
-    if (updateResult.modifiedCount === 0) {
+    const questionUpdateResult = await QuesModel.updateOne(
+      {
+        userId: new mongoose.Types.ObjectId(user._id),
+      },
+      {
+        $pull: {
+          messages: {
+            _id: new mongoose.Types.ObjectId(messageid),
+          },
+        },
+      }
+    );
+
+    if (questionUpdateResult.modifiedCount === 0) {
       return Response.json(
         {
           success: false,

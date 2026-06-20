@@ -19,9 +19,13 @@ export const authOptions: NextAuthOptions = {
           type: "password",
         },
       },
-      async authorize(credentials: any): Promise<any> {
+      async authorize(credentials) {
         await dbConnect();
         try {
+          if (!credentials?.identifier || !credentials.password) {
+            throw new Error("Missing credentials");
+          }
+
           const user = await UserModel.findOne({
             $or: [
               { email: credentials.identifier },
@@ -39,12 +43,23 @@ export const authOptions: NextAuthOptions = {
             user.password,
           );
           if (isPasswordCorrect) {
-            return user;
+            return {
+              id: user._id.toString(),
+              _id: user._id.toString(),
+              email: user.email,
+              username: user.username,
+              isVerified: user.isVerified,
+              isAcceptingMessage: user.isAcceptingMessage,
+            };
           } else {
             throw new Error("Incorrect password");
           }
-        } catch (err: any) {
-          throw new Error(err);
+        } catch (err) {
+          if (err instanceof Error) {
+            throw err;
+          }
+
+          throw new Error("Unable to authorize user");
         }
       },
     }),
@@ -55,7 +70,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token._id = user._id?.toString();
         token.isVerified = user.isVerified;
-        token.isAcceptingMessages = user.isAcceptingMessages;
+        token.isAcceptingMessage = user.isAcceptingMessage;
         token.username = user.username;
       }
       return token;
@@ -64,7 +79,7 @@ export const authOptions: NextAuthOptions = {
       if (token) {
         session.user._id = token._id;
         session.user.isVerified = token.isVerified;
-        session.user.isAcceptingMessages = token.isAcceptingMessages;
+        session.user.isAcceptingMessage = token.isAcceptingMessage;
         session.user.username = token.username;
       }
       return session;

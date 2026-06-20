@@ -1,18 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
-import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 import {
-  RefreshCcw,
-  Loader2,
   MessageSquare,
-  Link2,
-  ShieldCheck,
+  Reply,
+  CircleHelp,
+  ArrowUpRight,
+  Loader2,
 } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 
 import {
   Card,
@@ -22,81 +19,88 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import ProfileLink from "@/components/dashboard/ProfileLink";
-import AcceptMessagesToggle from "@/components/dashboard/AcceptMessagesToggle";
-import MessageCard from "@/components/MessageCard";
-
 import { useMessages } from "@/hooks/useMessages";
-import { useAcceptMessages } from "@/hooks/useAcceptMessages";
+import { useQuestions } from "@/hooks/question/useQuestion";
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
-
   const {
     messages,
-    loading: isMessagesLoading,
+    loading: messagesLoading,
     fetchMessages,
-    deleteMessageLocally,
   } = useMessages();
 
   const {
-    acceptMessages,
-    loading: isSwitchLoading,
-    fetchAcceptMessages,
-    updateAcceptMessages,
-  } = useAcceptMessages();
-
-  const username =
-    session?.user?.username || "";
-
-  const baseUrl =
-    typeof window !== "undefined"
-      ? `${window.location.protocol}//${window.location.host}`
-      : "";
-
-  const profileUrl =
-    `${baseUrl}/u/${username}`;
+    questions,
+    loading: questionsLoading,
+    fetchQuestions,
+  } = useQuestions();
 
   useEffect(() => {
     fetchMessages();
-    fetchAcceptMessages();
-  }, [
-    fetchMessages,
-    fetchAcceptMessages,
-  ]);
+    fetchQuestions();
+  }, [fetchMessages, fetchQuestions]);
+
+  const questionResponses = questions.reduce(
+    (total, question) => total + question.totalMessages,
+    0
+  );
+
+  const inboxReplies = messages.reduce(
+    (total, message) => total + (message.replies?.length ?? 0),
+    0
+  );
+
+  const questionReplies = questions.reduce(
+    (total, question) =>
+      total +
+      question.messages.reduce(
+        (messageTotal, message) =>
+          messageTotal + (message.replies?.length ?? 0),
+        0
+      ),
+    0
+  );
+
+  const recentMessages = [
+    ...messages.map((message) => ({
+      id: message._id?.toString() ?? message.replyAccessToken,
+      title: "Inbox message received",
+      createdAt: new Date(message.createdAt),
+    })),
+    ...questions.flatMap((question) =>
+      question.messages.map((message) => ({
+        id: message._id?.toString() ?? message.replyAccessToken,
+        title: "Question response received",
+        createdAt: new Date(message.createdAt),
+      }))
+    ),
+  ]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 3);
+
+  const isLoading = messagesLoading || questionsLoading;
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold">
+          Dashboard
+        </h1>
 
-      {/* Welcome Banner */}
+        <p className="text-muted-foreground">
+          Overview of your EchoSpace account.
+        </p>
+      </div>
 
-      <Card className="mb-8">
-        <CardContent className="py-8">
-          <h1 className="text-4xl font-bold tracking-tight">
-            Welcome back,
-            {" "}
-            {username}
-          </h1>
-
-          <p className="mt-2 text-muted-foreground">
-            Manage your profile and incoming
-            anonymous messages.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Stats */}
-
-      <div className="mb-8 grid gap-4 md:grid-cols-3">
-
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
             <MessageSquare className="h-8 w-8" />
 
             <div>
-              <div className="text-2xl font-bold">
-                {messages.length}
-              </div>
+              <p className="text-2xl font-bold">
+                {isLoading ? "..." : messages.length + questionResponses}
+              </p>
 
               <p className="text-sm text-muted-foreground">
                 Total Messages
@@ -107,15 +111,15 @@ export default function DashboardPage() {
 
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
-            <Link2 className="h-8 w-8" />
+            <Reply className="h-8 w-8" />
 
             <div>
-              <div className="text-2xl font-bold">
-                Active
-              </div>
+              <p className="text-2xl font-bold">
+                {isLoading ? "..." : inboxReplies + questionReplies}
+              </p>
 
               <p className="text-sm text-muted-foreground">
-                Public Profile
+                Total Replies
               </p>
             </div>
           </CardContent>
@@ -123,157 +127,112 @@ export default function DashboardPage() {
 
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
-            <ShieldCheck className="h-8 w-8" />
+            <CircleHelp className="h-8 w-8" />
 
             <div>
-              <div className="text-2xl font-bold">
-                {acceptMessages
-                  ? "ON"
-                  : "OFF"}
-              </div>
+              <p className="text-2xl font-bold">
+                {questionsLoading ? "..." : questions.length}
+              </p>
 
               <p className="text-sm text-muted-foreground">
-                Message Status
+                Questions
               </p>
             </div>
           </CardContent>
         </Card>
-
       </div>
 
-      {/* Profile + Settings */}
-
-      <div className="mb-8 grid gap-6 lg:grid-cols-3">
-
-        <div className="lg:col-span-2">
-
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Public Profile
-              </CardTitle>
-
-              <CardDescription>
-                Share this link to receive
-                anonymous messages.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              <ProfileLink
-                profileUrl={profileUrl}
-              />
-            </CardContent>
-          </Card>
-
-        </div>
-
-        <div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Settings
-              </CardTitle>
-
-              <CardDescription>
-                Control whether people can
-                send you messages.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              <AcceptMessagesToggle
-                acceptMessages={
-                  acceptMessages
-                }
-                loading={
-                  isSwitchLoading
-                }
-                onToggle={
-                  updateAcceptMessages
-                }
-              />
-            </CardContent>
-          </Card>
-
-        </div>
-
-      </div>
-
-      {/* Messages Section */}
-
-      <div className="mb-4 flex items-center justify-between">
-
-        <div>
-          <h2 className="text-2xl font-semibold">
-            Messages
-          </h2>
-
-          <p className="text-muted-foreground">
-            View and manage received
-            messages.
-          </p>
-        </div>
-
-        <Button
-          variant="outline"
-          onClick={() =>
-            fetchMessages(true)
-          }
-          disabled={isMessagesLoading}
-        >
-          {isMessagesLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Refreshing
-            </>
-          ) : (
-            <>
-              <RefreshCcw className="mr-2 h-4 w-4" />
-              Refresh
-            </>
-          )}
-        </Button>
-
-      </div>
-
-      <Separator className="mb-6" />
-
-      {/* Messages Grid */}
-
-      {messages.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {messages.map((message) => (
-            <MessageCard
-              key={message._id?.toString()}
-              message={message}
-              onMessageDelete={
-                deleteMessageLocally
-              }
-            />
-          ))}
-        </div>
-      ) : (
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
+          <CardHeader>
+            <CardTitle>
+              Quick Actions
+            </CardTitle>
 
-            <MessageSquare className="mb-4 h-12 w-12 text-muted-foreground" />
+            <CardDescription>
+              Common tasks for your anonymous inbox.
+            </CardDescription>
+          </CardHeader>
 
-            <h3 className="text-lg font-semibold">
-              No messages yet
-            </h3>
+          <CardContent className="space-y-4">
+            <Link
+              href="/dashboard/default"
+              className="flex items-center justify-between rounded-lg border p-4 transition hover:bg-muted/50"
+            >
+              <div>
+                <p className="font-medium">
+                  View Inbox
+                </p>
 
-            <p className="mt-2 text-center text-sm text-muted-foreground">
-              Share your profile link to
-              start receiving anonymous
-              messages.
-            </p>
+                <p className="text-sm text-muted-foreground">
+                  Read incoming anonymous messages.
+                </p>
+              </div>
 
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+
+            <Link
+              href="/dashboard/question"
+              className="flex items-center justify-between rounded-lg border p-4 transition hover:bg-muted/50"
+            >
+              <div>
+                <p className="font-medium">
+                  Manage Questions
+                </p>
+
+                <p className="text-sm text-muted-foreground">
+                  Share prompts and review responses.
+                </p>
+              </div>
+
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
           </CardContent>
         </Card>
-      )}
 
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Recent Activity
+            </CardTitle>
+
+            <CardDescription>
+              Latest messages across your inbox and questions.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            {isLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading activity
+              </div>
+            ) : recentMessages.length > 0 ? (
+              <div className="space-y-4">
+                {recentMessages.map((item) => (
+                  <div
+                    key={item.id}
+                    className="border-l-2 pl-4"
+                  >
+                    <p className="font-medium">
+                      {item.title}
+                    </p>
+
+                    <p className="text-sm text-muted-foreground">
+                      {item.createdAt.toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No activity yet.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

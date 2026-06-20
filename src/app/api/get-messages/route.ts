@@ -4,8 +4,6 @@ import { authOptions } from "../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/modal/user";
 
-import mongoose from "mongoose";
-
 export async function GET() {
   await dbConnect();
 
@@ -26,36 +24,9 @@ export async function GET() {
   }
 
   try {
-    const userId = new mongoose.Types.ObjectId(user._id);
+    const foundUser = await UserModel.findById(user._id).select("messages");
 
-    const foundUser = await UserModel.aggregate([
-      {
-        $match: {
-          _id: userId,
-        },
-      },
-
-      {
-        $unwind: "$messages",
-      },
-
-      {
-        $sort: {
-          "messages.createdAt": -1,
-        },
-      },
-
-      {
-        $group: {
-          _id: "$_id",
-          messages: {
-            $push: "$messages",
-          },
-        },
-      },
-    ]);
-
-    if (!foundUser || foundUser.length === 0) {
+    if (!foundUser) {
       return Response.json(
         {
           success: false,
@@ -67,10 +38,15 @@ export async function GET() {
       );
     }
 
+    const messages = [...foundUser.messages].sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+    );
+
+
     return Response.json(
       {
         success: true,
-        messages: foundUser[0].messages,
+        messages,
       },
       {
         status: 200,
@@ -78,12 +54,12 @@ export async function GET() {
     );
 
   } catch (error) {
-    console.error("Error getting messages:", error);
+    console.error("Error getting message:", error);
 
     return Response.json(
       {
         success: false,
-        message: "Unexpected error while fetching messages",
+        message: "Unexpected error while fetching message",
       },
       {
         status: 500,

@@ -28,7 +28,7 @@ export function useMessages() {
 
         if (refresh) {
           toast.success(
-            "Showing latest messages"
+            "Showing latest message"
           );
         }
       } catch (error) {
@@ -37,7 +37,7 @@ export function useMessages() {
 
         toast.error(
           axiosError.response?.data.message ??
-            "Failed to fetch messages"
+            "Failed to fetch message"
         );
       } finally {
         setLoading(false);

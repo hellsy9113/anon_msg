@@ -40,9 +40,9 @@ export async function GET(request: Request) {
       );
     }
     const { username } = result.data;
-     const existingVerifiedUser=await UserModel.findOne({ username, isVerified: true });
+     const existingUser=await UserModel.findOne({ username });
 
-     if(existingVerifiedUser){
+     if(existingUser){
         return Response.json({
             success:false,
             message:'username is already taken'
@@ -50,7 +50,7 @@ export async function GET(request: Request) {
      }
     return Response.json({
       success: true,
-      message: "username is available",
+      message: "Username is unique",
     });
   } catch (error) {
     console.log("error checking username", error);

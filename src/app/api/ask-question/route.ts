@@ -33,7 +33,7 @@ export async function POST(request: Request) {
       content,
       createdAt: new Date(),
       userId,
-      message: [],
+      messages: [],
     });
     await newQuestion.save();
     return NextResponse.json(

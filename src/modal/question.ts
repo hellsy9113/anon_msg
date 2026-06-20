@@ -1,11 +1,11 @@
-import mongoose ,{Schema,Document, mongo} from "mongoose";
+import mongoose ,{Schema} from "mongoose";
 import { Message,MessageSchema} from "./user";
  export interface Question {
     _id?:mongoose.Types.ObjectId,
     content:string,
     createdAt:Date,
-    userId:Schema.Types.ObjectId,
-    message:Message[],
+    userId:mongoose.Types.ObjectId,
+    messages:Message[]
 }
 
 const QuesSchema:Schema<Question>=new Schema({
@@ -23,7 +23,7 @@ const QuesSchema:Schema<Question>=new Schema({
         ref:"User",
         required:true
     },
-    message:[MessageSchema]
+    messages:[MessageSchema]
 });
 
 
