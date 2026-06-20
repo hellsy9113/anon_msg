@@ -1,6 +1,7 @@
 import { getServerSession, User } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
+import QuesModel from "@/modal/question";
 import UserModel from "@/modal/user";
 import mongoose from "mongoose";
 import { NextRequest } from "next/server";
@@ -51,6 +52,11 @@ export async function POST(
       );
     }
 
+    const replyPayload = {
+      content,
+      createdAt: new Date(),
+    };
+
     const updatedUserWithReply = await UserModel.findOneAndUpdate(
       {
         _id: user._id,
@@ -58,10 +64,7 @@ export async function POST(
       },
       {
         $push: {
-          "messages.$.replies": {
-            content,
-            createdAt: new Date(),
-          },
+          "messages.$.replies": replyPayload,
         },
       },
       {
@@ -69,7 +72,32 @@ export async function POST(
       }
     );
 
-    if (!updatedUserWithReply) {
+    if (updatedUserWithReply) {
+      return Response.json(
+        {
+          success: true,
+          message: "Reply added successfully",
+        },
+        { status: 200 }
+      );
+    }
+
+    const updatedQuestionWithReply = await QuesModel.findOneAndUpdate(
+      {
+        userId: new mongoose.Types.ObjectId(user._id),
+        "messages._id": new mongoose.Types.ObjectId(messageid),
+      },
+      {
+        $push: {
+          "messages.$.replies": replyPayload,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!updatedQuestionWithReply) {
       return Response.json(
         {
           success: false,

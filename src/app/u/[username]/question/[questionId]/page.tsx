@@ -18,7 +18,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
 import {
-  Sparkles,
   Send,
   Copy,
   MessageSquare,
@@ -41,6 +40,14 @@ interface ReplyData {
   replies: Reply[];
 }
 
+const getStoredReplyToken = (questionId: string) => {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  return localStorage.getItem(`reply-token-${questionId}`) ?? "";
+};
+
 export default function PublicQuestionPage() {
   const { username, questionId } = useParams<{
     username: string;
@@ -56,20 +63,19 @@ export default function PublicQuestionPage() {
   const [sending, setSending] =
     useState(false);
 
-  const [suggesting, setSuggesting] =
-    useState(false);
-
   const [fetchingReplies, setFetchingReplies] =
     useState(false);
 
   const [message, setMessage] =
     useState("");
 
+  const initialReplyToken = getStoredReplyToken(questionId);
+
   const [replyToken, setReplyToken] =
-    useState("");
+    useState(initialReplyToken);
 
   const [savedToken, setSavedToken] =
-    useState("");
+    useState(initialReplyToken);
 
   const [replyData, setReplyData] =
     useState<ReplyData | null>(null);
@@ -82,10 +88,13 @@ export default function PublicQuestionPage() {
         );
 
         setQuestion(response.data.question);
-      } catch (error: any) {
+      } catch (error) {
+        const message = axios.isAxiosError<{ message?: string }>(error)
+          ? error.response?.data?.message
+          : undefined;
+
         toast.error(
-          error.response?.data?.message ??
-          "Unable to load question."
+          message ?? "Unable to load question."
         );
       } finally {
         setLoading(false);
@@ -95,44 +104,7 @@ export default function PublicQuestionPage() {
     if (username && questionId) {
       fetchQuestion();
     }
-  //     if (saved) {
-  //   setSavedToken(saved);
-  // }
-
   }, [username, questionId]);
-
-  // const saved = localStorage.getItem(
-  //   `reply-token-${questionId}`
-  // );
-
-
-  // const handleSuggest = async () => {
-  //   try {
-  //     setSuggesting(true);
-
-  //     const response = await axios.post(
-  //       "/api/suggest-messages",
-  //       {
-  //         question: question?.content,
-  //       }
-  //     );
-
-  //     if (
-  //       response.data.suggestions &&
-  //       response.data.suggestions.length > 0
-  //     ) {
-  //       setMessage(
-  //         response.data.suggestions[0]
-  //       );
-  //     }
-  //   } catch {
-  //     toast.error(
-  //       "Failed to generate suggestion."
-  //     );
-  //   } finally {
-  //     setSuggesting(false);
-  //   }
-  // };
 
   const handleSend = async () => {
     if (!message.trim()) {
@@ -166,10 +138,13 @@ export default function PublicQuestionPage() {
       );
 
       setMessage("");
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = axios.isAxiosError<{ message?: string }>(error)
+        ? error.response?.data?.message
+        : undefined;
+
       toast.error(
-        error.response?.data?.message ??
-        "Failed to send message."
+        errorMessage ?? "Failed to send message."
       );
     } finally {
       setSending(false);
@@ -211,10 +186,13 @@ export default function PublicQuestionPage() {
       toast.success(
         "Replies loaded."
       );
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = axios.isAxiosError<{ message?: string }>(error)
+        ? error.response?.data?.message
+        : undefined;
+
       toast.error(
-        error.response?.data?.message ??
-        "Failed to fetch replies."
+        errorMessage ?? "Failed to fetch replies."
       );
     } finally {
       setFetchingReplies(false);
@@ -459,7 +437,7 @@ export default function PublicQuestionPage() {
             </CardTitle>
 
             <CardDescription>
-              Your anonymous message and any replies you've received.
+              Your anonymous message and any replies you&apos;ve received.
             </CardDescription>
 
           </CardHeader>
@@ -545,7 +523,7 @@ export default function PublicQuestionPage() {
                     </h3>
 
                     <p className="mt-2 text-center text-sm text-muted-foreground">
-                      The owner hasn't replied to your
+                      The owner hasn&apos;t replied to your
                       anonymous message yet.
                     </p>
 

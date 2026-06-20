@@ -4,8 +4,6 @@ import { authOptions } from "../auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/modal/user";
 
-import mongoose from "mongoose";
-
 export async function GET() {
   await dbConnect();
 
@@ -26,34 +24,7 @@ export async function GET() {
   }
 
   try {
-    const userId = new mongoose.Types.ObjectId(user._id);
-
-    const foundUser = await UserModel.aggregate([
-      {
-        $match: {
-          _id: userId,
-        },
-      },
-
-      {
-        $unwind: "$messages",
-      },
-
-      {
-        $sort: {
-          "messages.createdAt": -1,
-        },
-      },
-
-      {
-        $group: {
-          _id: "$_id",
-          messages: {
-            $push: "$messages",
-          },
-        },
-      },
-    ]);
+    const foundUser = await UserModel.findById(user._id).select("messages");
 
     if (!foundUser) {
       return Response.json(
@@ -66,23 +37,16 @@ export async function GET() {
         }
       );
     }
-    if( foundUser.length === 0) {
-      return Response.json(
-        {
-          success: false,
-          message: "Messages not found",
-        },
-        {
-          status: 404,
-        }
-      );
-    }
+
+    const messages = [...foundUser.messages].sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+    );
 
 
     return Response.json(
       {
         success: true,
-        messages: foundUser[0].messages,
+        messages,
       },
       {
         status: 200,

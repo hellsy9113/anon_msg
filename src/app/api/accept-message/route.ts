@@ -2,6 +2,7 @@ import {getServerSession, User} from "next-auth"
 import {authOptions}  from "../auth/[...nextauth]/options"
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/modal/user";
+import { acceptMessageSchema } from "@/schemas/acceptMessageSchema";
 
 export async function POST(request: Request) {
   await dbConnect();
@@ -15,11 +16,20 @@ export async function POST(request: Request) {
       success:false,
       message:"Not authenticated"
     },
-  { status:500})
+  { status:401})
   }
 
   const userId=user._id;
-  const{acceptMessages}=await request.json();
+  const validationResult = acceptMessageSchema.safeParse(await request.json());
+
+  if (!validationResult.success) {
+    return Response.json({
+      success:false,
+      message:"acceptMessages must be a boolean"
+    },{status:400})
+  }
+
+  const{acceptMessages}=validationResult.data;
 
   try{
 
@@ -56,9 +66,8 @@ export async function POST(request: Request) {
 }
 }
 
-export async function GET(request:Request)
+export async function GET()
 {
-  dbConnect();
    await dbConnect();
   const session = await getServerSession(authOptions);
   const user:User=session?.user as User;
@@ -70,7 +79,7 @@ export async function GET(request:Request)
       success:false,
       message:"Not authenticated"
     },
-  { status:500})
+  { status:401})
   }
 
   const userId=user._id;

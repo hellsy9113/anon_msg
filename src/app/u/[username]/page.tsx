@@ -10,7 +10,7 @@ import { useParams } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 import { useCompletion } from "@ai-sdk/react";
 
@@ -56,6 +56,13 @@ interface MessageData {
   replies: Reply[];
 }
 
+interface ReplyTokenRecord {
+  username: string;
+  token: string;
+  originalMessage?: string;
+  createdAt?: string;
+}
+
 /* -------------------------------- */
 /* Constants */
 /* -------------------------------- */
@@ -73,6 +80,18 @@ const parseMessages = (messageString: string): string[] => {
   return messageString
     .split(SPECIAL_CHAR)
     .filter((message) => message.trim() !== "");
+};
+
+const getLatestReplyToken = (username: string): string => {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  const storedTokens = JSON.parse(
+    localStorage.getItem("replyTokens") || "[]",
+  ) as ReplyTokenRecord[];
+
+  return storedTokens.findLast((item) => item.username === username)?.token ?? "";
 };
 
 /* -------------------------------- */
@@ -96,7 +115,9 @@ export default function SendMessage() {
 
   const [isSending, setIsSending] = useState(false);
 
-  const [replyAccessToken, setReplyAccessToken] = useState("");
+  const [replyAccessToken, setReplyAccessToken] = useState(() =>
+    getLatestReplyToken(username),
+  );
 
   const [manualToken, setManualToken] = useState("");
 
@@ -116,7 +137,10 @@ export default function SendMessage() {
     },
   });
 
-  const messageContent = form.watch("content") || "";
+  const messageContent = useWatch({
+    control: form.control,
+    name: "content",
+  }) || "";
 
   /* ------------------------------ */
   /* AI Suggested message */
@@ -128,7 +152,7 @@ export default function SendMessage() {
     isLoading: isSuggestLoading,
     error,
   } = useCompletion({
-    api: "/api/suggest-message",
+    api: "/api/suggest-messages",
 
     initialCompletion: INITIAL_MESSAGES,
   });
@@ -187,25 +211,22 @@ export default function SendMessage() {
   /* ------------------------------ */
 
   useEffect(() => {
-    const storedTokens = JSON.parse(
-      localStorage.getItem("replyTokens") || "[]",
-    );
-
-    /* 
-       Find latest token related to
-       current username
-    */
-
-    const latestToken = storedTokens.find(
-      (item: any) => item.username === username,
-    );
-
-    if (latestToken) {
-      setReplyAccessToken(latestToken.token);
-
-      fetchReplies(latestToken.token);
+    if (!replyAccessToken) {
+      return;
     }
-  }, [username]);
+
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (!cancelled) {
+        fetchReplies(replyAccessToken);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [replyAccessToken]);
 
 
    //manual token submit
@@ -220,9 +241,9 @@ export default function SendMessage() {
 
     const existingToken = JSON.parse(
       localStorage.getItem("replyTokens") || "[]",
-    );
+    ) as ReplyTokenRecord[];
 
-    const exists = existingToken.some((t: any) => t.token === manualToken);
+    const exists = existingToken.some((t) => t.token === manualToken);
     if (!exists) {
       existingToken.push({
         username,
@@ -257,7 +278,11 @@ export default function SendMessage() {
 
       const token = response.data.replyAccessToken;
 
-      setReplyAccessToken(token as string);
+      if (!token) {
+        throw new Error("Reply access token missing from response");
+      }
+
+      setReplyAccessToken(token);
 
       /* -------------------------- */
       /* Store tokens locally
@@ -268,7 +293,7 @@ export default function SendMessage() {
 
       const existingTokens = JSON.parse(
         localStorage.getItem("replyTokens") || "[]",
-      );
+      ) as ReplyTokenRecord[];
 
       existingTokens.push({
         token,
@@ -284,7 +309,7 @@ export default function SendMessage() {
       /* Fetch replies immediately */
       /* -------------------------- */
 
-      fetchReplies(token as string);
+      fetchReplies(token);
 
       /* -------------------------- */
       /* Reset form */

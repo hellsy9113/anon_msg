@@ -3,6 +3,7 @@ import UserModel from "@/modal/user";
 import bcrypt from "bcrypt";
 
 import { sendVerificationEmail } from "@/helper/sendVerificationEmail";
+import { signUpSchema } from "@/schemas/signupSchema";
 import { NextResponse } from "next/server";
 
 //it is necssry to name the name the function post.as  route files use named export to
@@ -28,12 +29,22 @@ export async function POST(request: Request) {
   await dbConnect();
 
   try {
-    const { username, email, password } = await request.json();
-    const existingUserVerifiedByUsername = await UserModel.findOne({
-      username,
-      isVerified: true,
-    });
-    if (existingUserVerifiedByUsername) {
+    const requestBody = await request.json();
+    const validationResult = signUpSchema.safeParse(requestBody);
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: validationResult.error.issues[0]?.message ?? "Invalid signup data",
+        },
+        { status: 400 },
+      );
+    }
+
+    const { username, email, password } = validationResult.data;
+    const existingUserByUsername = await UserModel.findOne({ username });
+    if (existingUserByUsername && existingUserByUsername.email !== email) {
       return NextResponse.json(
         {
           success: false,
@@ -75,7 +86,7 @@ export async function POST(request: Request) {
         isVerified: false,
         verifyCodeExpiry: expiryDate,
         isAcceptingMessage: true,
-        message: [],
+        messages: [],
       });
       await newUser.save();
     }

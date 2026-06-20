@@ -7,8 +7,6 @@ import {
   LayoutDashboard,
   MessageSquare,
   Reply,
-  BarChart3,
-  Settings,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -28,16 +26,6 @@ const routes = [
     label: "Question",
     href: "/dashboard/question",
     icon: Reply,
-  },
-  {
-    label: "Analytics",
-    href: "/dashboard/analytics",
-    icon: BarChart3,
-  },
-  {
-    label: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings,
   },
 ];
 

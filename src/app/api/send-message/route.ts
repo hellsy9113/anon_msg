@@ -4,6 +4,7 @@ import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/modal/user";
 import QuesModel from "@/modal/question";
 import mongoose from "mongoose";
+import { messageSchema } from "@/schemas/messageSchema";
 
 export async function POST(request: Request) {
     await dbConnect();
@@ -14,6 +15,22 @@ export async function POST(request: Request) {
             content,
             questionId,
         } = await request.json();
+
+        const validationResult = messageSchema.safeParse({ content });
+
+        if (!validationResult.success) {
+            return Response.json(
+                {
+                    success: false,
+                    message:
+                        validationResult.error.issues[0]?.message ??
+                        "Invalid message content",
+                },
+                { status: 400 }
+            );
+        }
+
+        const validatedContent = validationResult.data.content;
 
         // Find recipient
         const user = await UserModel.findOne({
@@ -34,7 +51,7 @@ export async function POST(request: Request) {
         const replyAccessToken = crypto.randomUUID();
 
         const newMessage = {
-            content,
+            content: validatedContent,
             createdAt: new Date(),
             replyAccessToken,
             replies: [],
@@ -44,6 +61,16 @@ export async function POST(request: Request) {
         // QUESTION FEATURE
         // =====================================================
         if (questionId) {
+            if (!mongoose.Types.ObjectId.isValid(questionId)) {
+                return Response.json(
+                    {
+                        success: false,
+                        message: "Invalid question id",
+                    },
+                    { status: 400 }
+                );
+            }
+
             const question = await QuesModel.findOne({
                 _id: new mongoose.Types.ObjectId(questionId),
                 userId: new mongoose.Types.ObjectId(user._id),

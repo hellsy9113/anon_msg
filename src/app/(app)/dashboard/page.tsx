@@ -1,8 +1,14 @@
+"use client";
+
+import { useEffect } from "react";
+import Link from "next/link";
+
 import {
   MessageSquare,
   Reply,
-  BarChart3,
+  CircleHelp,
   ArrowUpRight,
+  Loader2,
 } from "lucide-react";
 
 import {
@@ -13,12 +19,69 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+import { useMessages } from "@/hooks/useMessages";
+import { useQuestions } from "@/hooks/question/useQuestion";
+
 export default function DashboardPage() {
+  const {
+    messages,
+    loading: messagesLoading,
+    fetchMessages,
+  } = useMessages();
+
+  const {
+    questions,
+    loading: questionsLoading,
+    fetchQuestions,
+  } = useQuestions();
+
+  useEffect(() => {
+    fetchMessages();
+    fetchQuestions();
+  }, [fetchMessages, fetchQuestions]);
+
+  const questionResponses = questions.reduce(
+    (total, question) => total + question.totalMessages,
+    0
+  );
+
+  const inboxReplies = messages.reduce(
+    (total, message) => total + (message.replies?.length ?? 0),
+    0
+  );
+
+  const questionReplies = questions.reduce(
+    (total, question) =>
+      total +
+      question.messages.reduce(
+        (messageTotal, message) =>
+          messageTotal + (message.replies?.length ?? 0),
+        0
+      ),
+    0
+  );
+
+  const recentMessages = [
+    ...messages.map((message) => ({
+      id: message._id?.toString() ?? message.replyAccessToken,
+      title: "Inbox message received",
+      createdAt: new Date(message.createdAt),
+    })),
+    ...questions.flatMap((question) =>
+      question.messages.map((message) => ({
+        id: message._id?.toString() ?? message.replyAccessToken,
+        title: "Question response received",
+        createdAt: new Date(message.createdAt),
+      }))
+    ),
+  ]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 3);
+
+  const isLoading = messagesLoading || questionsLoading;
+
   return (
     <div className="space-y-8">
-
-      {/* Header */}
-
       <div>
         <h1 className="text-3xl font-bold">
           Dashboard
@@ -29,17 +92,14 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Stats */}
-
       <div className="grid gap-4 md:grid-cols-3">
-
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
             <MessageSquare className="h-8 w-8" />
 
             <div>
               <p className="text-2xl font-bold">
-                128
+                {isLoading ? "..." : messages.length + questionResponses}
               </p>
 
               <p className="text-sm text-muted-foreground">
@@ -55,7 +115,7 @@ export default function DashboardPage() {
 
             <div>
               <p className="text-2xl font-bold">
-                42
+                {isLoading ? "..." : inboxReplies + questionReplies}
               </p>
 
               <p className="text-sm text-muted-foreground">
@@ -67,26 +127,22 @@ export default function DashboardPage() {
 
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
-            <BarChart3 className="h-8 w-8" />
+            <CircleHelp className="h-8 w-8" />
 
             <div>
               <p className="text-2xl font-bold">
-                +18%
+                {questionsLoading ? "..." : questions.length}
               </p>
 
               <p className="text-sm text-muted-foreground">
-                Weekly Growth
+                Questions
               </p>
             </div>
           </CardContent>
         </Card>
-
       </div>
 
-      {/* Quick Actions */}
-
       <div className="grid gap-6 lg:grid-cols-2">
-
         <Card>
           <CardHeader>
             <CardTitle>
@@ -94,40 +150,44 @@ export default function DashboardPage() {
             </CardTitle>
 
             <CardDescription>
-              Common tasks you perform.
+              Common tasks for your anonymous inbox.
             </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
-
-            <div className="flex items-center justify-between rounded-lg border p-4">
+            <Link
+              href="/dashboard/default"
+              className="flex items-center justify-between rounded-lg border p-4 transition hover:bg-muted/50"
+            >
               <div>
                 <p className="font-medium">
                   View Inbox
                 </p>
 
                 <p className="text-sm text-muted-foreground">
-                  Read incoming anonymous message.
+                  Read incoming anonymous messages.
                 </p>
               </div>
 
               <ArrowUpRight className="h-4 w-4" />
-            </div>
+            </Link>
 
-            <div className="flex items-center justify-between rounded-lg border p-4">
+            <Link
+              href="/dashboard/question"
+              className="flex items-center justify-between rounded-lg border p-4 transition hover:bg-muted/50"
+            >
               <div>
                 <p className="font-medium">
-                  Manage Replies
+                  Manage Questions
                 </p>
 
                 <p className="text-sm text-muted-foreground">
-                  Continue anonymous conversations.
+                  Share prompts and review responses.
                 </p>
               </div>
 
               <ArrowUpRight className="h-4 w-4" />
-            </div>
-
+            </Link>
           </CardContent>
         </Card>
 
@@ -138,103 +198,41 @@ export default function DashboardPage() {
             </CardTitle>
 
             <CardDescription>
-              Latest events on your account.
+              Latest messages across your inbox and questions.
             </CardDescription>
           </CardHeader>
 
           <CardContent>
-
-            <div className="space-y-4">
-
-              <div className="border-l-2 pl-4">
-                <p className="font-medium">
-                  New anonymous message received
-                </p>
-
-                <p className="text-sm text-muted-foreground">
-                  2 minutes ago
-                </p>
+            {isLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading activity
               </div>
+            ) : recentMessages.length > 0 ? (
+              <div className="space-y-4">
+                {recentMessages.map((item) => (
+                  <div
+                    key={item.id}
+                    className="border-l-2 pl-4"
+                  >
+                    <p className="font-medium">
+                      {item.title}
+                    </p>
 
-              <div className="border-l-2 pl-4">
-                <p className="font-medium">
-                  Reply sent successfully
-                </p>
-
-                <p className="text-sm text-muted-foreground">
-                  15 minutes ago
-                </p>
+                    <p className="text-sm text-muted-foreground">
+                      {item.createdAt.toLocaleString()}
+                    </p>
+                  </div>
+                ))}
               </div>
-
-              <div className="border-l-2 pl-4">
-                <p className="font-medium">
-                  Profile link viewed
-                </p>
-
-                <p className="text-sm text-muted-foreground">
-                  1 hour ago
-                </p>
-              </div>
-
-            </div>
-
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No activity yet.
+              </p>
+            )}
           </CardContent>
         </Card>
-
       </div>
-
-      {/* Feature Status */}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            Platform Status
-          </CardTitle>
-
-          <CardDescription>
-            Current state of your EchoSpace workspace.
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent>
-
-          <div className="grid gap-4 md:grid-cols-3">
-
-            <div className="rounded-lg border p-4">
-              <p className="font-medium">
-                Inbox
-              </p>
-
-              <p className="text-sm text-muted-foreground">
-                Active
-              </p>
-            </div>
-
-            <div className="rounded-lg border p-4">
-              <p className="font-medium">
-                Anonymous Replies
-              </p>
-
-              <p className="text-sm text-muted-foreground">
-                Enabled
-              </p>
-            </div>
-
-            <div className="rounded-lg border p-4">
-              <p className="font-medium">
-                Analytics
-              </p>
-
-              <p className="text-sm text-muted-foreground">
-                Coming Soon
-              </p>
-            </div>
-
-          </div>
-
-        </CardContent>
-      </Card>
-
     </div>
   );
 }

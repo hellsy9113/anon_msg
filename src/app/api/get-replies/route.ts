@@ -1,4 +1,5 @@
 import dbConnect  from "@/lib/dbConnect";
+import QuesModel from "@/modal/question";
 import UserModel from "@/modal/user";
 export async function POST(request:Request)
 {
@@ -21,28 +22,37 @@ export async function POST(request:Request)
         "messages.replyAccessToken":replyAccessToken
       });
 
-      if(!user)
-      {
-           return Response.json(
-        {
-          success: false,
-          message: "Invalid token",
-        },
-        { status: 404 }
+      const userMessage = user?.messages.find(
+        (msg) => msg.replyAccessToken === replyAccessToken
       );
-      }
-     
-       const message = user.messages.find(
-      (msg) =>
-        msg.replyAccessToken ===
-        replyAccessToken
-    );
 
-    if (!message) {
+      if (userMessage) {
+        return Response.json(
+          {
+            success: true,
+            messageData: {
+              originalMessage: userMessage.content,
+              createdAt: userMessage.createdAt,
+              replies: userMessage.replies,
+            },
+          },
+          { status: 200 }
+        );
+      }
+
+      const question = await QuesModel.findOne({
+        "messages.replyAccessToken": replyAccessToken,
+      });
+
+      const questionMessage = question?.messages.find(
+        (msg) => msg.replyAccessToken === replyAccessToken
+      );
+
+    if (!questionMessage) {
       return Response.json(
         {
           success: false,
-          message: "Message not found",
+          message: "Invalid token",
         },
         { status: 404 }
       );
@@ -54,13 +64,13 @@ export async function POST(request:Request)
 
         messageData: {
           originalMessage:
-            message.content,
+            questionMessage.content,
 
           createdAt:
-            message.createdAt,
+            questionMessage.createdAt,
 
           replies:
-            message.replies,
+            questionMessage.replies,
         },
       },
       { status: 200 }
