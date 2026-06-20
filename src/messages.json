@@ -1,17 +1,42 @@
 [
   {
-    "title": "Message from User123",
-    "content": "Hey, how are you doing today?",
-    "received": "10 minutes ago"
+    "title": "On your work ethic",
+    "content": "You're the first one in and the last one out — but honestly, it's making the rest of us look bad in the best way possible.",
+    "received": "3 minutes ago"
   },
   {
-    "title": "Message from SecretAdmirer",
-    "content": "I really liked your recent post!",
-    "received": "2 hours ago"
+    "title": "Something I never said",
+    "content": "You changed how I think about problems. I've never told you that out loud, but it's true.",
+    "received": "18 minutes ago"
   },
   {
-    "title": "Message from MysteryGuest",
-    "content": "Do you have any book recommendations?",
+    "title": "Honest critique",
+    "content": "Your ideas are brilliant but you undersell them every single time. Speak louder — the room is listening.",
+    "received": "1 hour ago"
+  },
+  {
+    "title": "What the team thinks",
+    "content": "Everyone notices how you handle pressure. You make chaos feel manageable, and nobody says it enough.",
+    "received": "3 hours ago"
+  },
+  {
+    "title": "Growth note",
+    "content": "You're great at starting things. The next level for you is finishing them with the same energy.",
+    "received": "7 hours ago"
+  },
+  {
+    "title": "From someone who watches",
+    "content": "The way you treat people who can do nothing for you says everything about your character.",
     "received": "1 day ago"
+  },
+  {
+    "title": "Hard truth",
+    "content": "You're playing too small. The version of you that takes risks is the one we all want to see more of.",
+    "received": "2 days ago"
+  },
+  {
+    "title": "Quietly inspired",
+    "content": "I started working out because of you. You didn't say a word — I just watched and decided to change.",
+    "received": "3 days ago"
   }
 ]

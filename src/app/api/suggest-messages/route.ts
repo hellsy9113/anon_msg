@@ -31,7 +31,7 @@ Rules:
     return Response.json(
       {
         success: false,
-        message: "Failed to generate messages",
+        message: "Failed to generate message",
       },
       {
         status: 500,

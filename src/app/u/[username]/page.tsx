@@ -119,7 +119,7 @@ export default function SendMessage() {
   const messageContent = form.watch("content") || "";
 
   /* ------------------------------ */
-  /* AI Suggested messages */
+  /* AI Suggested message */
   /* ------------------------------ */
 
   const {
@@ -128,7 +128,7 @@ export default function SendMessage() {
     isLoading: isSuggestLoading,
     error,
   } = useCompletion({
-    api: "/api/suggest-messages",
+    api: "/api/suggest-message",
 
     initialCompletion: INITIAL_MESSAGES,
   });
@@ -321,7 +321,7 @@ export default function SendMessage() {
         </h1>
 
         <p className="text-center text-muted-foreground">
-          Send anonymous messages to <span className="font-medium">@{username}</span>
+          Send anonymous message to <span className="font-medium">@{username}</span>
         </p>
       </CardHeader>
 

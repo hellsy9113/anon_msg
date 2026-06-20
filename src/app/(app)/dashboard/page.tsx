@@ -1,18 +1,9 @@
-"use client";
-
-import { useEffect } from "react";
-import { useSession } from "next-auth/react";
-
 import {
-  RefreshCcw,
-  Loader2,
   MessageSquare,
-  Link2,
-  ShieldCheck,
+  Reply,
+  BarChart3,
+  ArrowUpRight,
 } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 
 import {
   Card,
@@ -22,81 +13,34 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import ProfileLink from "@/components/dashboard/ProfileLink";
-import AcceptMessagesToggle from "@/components/dashboard/AcceptMessagesToggle";
-import MessageCard from "@/components/MessageCard";
-
-import { useMessages } from "@/hooks/useMessages";
-import { useAcceptMessages } from "@/hooks/useAcceptMessages";
-
 export default function DashboardPage() {
-  const { data: session } = useSession();
-
-  const {
-    messages,
-    loading: isMessagesLoading,
-    fetchMessages,
-    deleteMessageLocally,
-  } = useMessages();
-
-  const {
-    acceptMessages,
-    loading: isSwitchLoading,
-    fetchAcceptMessages,
-    updateAcceptMessages,
-  } = useAcceptMessages();
-
-  const username =
-    session?.user?.username || "";
-
-  const baseUrl =
-    typeof window !== "undefined"
-      ? `${window.location.protocol}//${window.location.host}`
-      : "";
-
-  const profileUrl =
-    `${baseUrl}/u/${username}`;
-
-  useEffect(() => {
-    fetchMessages();
-    fetchAcceptMessages();
-  }, [
-    fetchMessages,
-    fetchAcceptMessages,
-  ]);
-
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
+    <div className="space-y-8">
 
-      {/* Welcome Banner */}
+      {/* Header */}
 
-      <Card className="mb-8">
-        <CardContent className="py-8">
-          <h1 className="text-4xl font-bold tracking-tight">
-            Welcome back,
-            {" "}
-            {username}
-          </h1>
+      <div>
+        <h1 className="text-3xl font-bold">
+          Dashboard
+        </h1>
 
-          <p className="mt-2 text-muted-foreground">
-            Manage your profile and incoming
-            anonymous messages.
-          </p>
-        </CardContent>
-      </Card>
+        <p className="text-muted-foreground">
+          Overview of your EchoSpace account.
+        </p>
+      </div>
 
       {/* Stats */}
 
-      <div className="mb-8 grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-3">
 
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
             <MessageSquare className="h-8 w-8" />
 
             <div>
-              <div className="text-2xl font-bold">
-                {messages.length}
-              </div>
+              <p className="text-2xl font-bold">
+                128
+              </p>
 
               <p className="text-sm text-muted-foreground">
                 Total Messages
@@ -107,15 +51,15 @@ export default function DashboardPage() {
 
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
-            <Link2 className="h-8 w-8" />
+            <Reply className="h-8 w-8" />
 
             <div>
-              <div className="text-2xl font-bold">
-                Active
-              </div>
+              <p className="text-2xl font-bold">
+                42
+              </p>
 
               <p className="text-sm text-muted-foreground">
-                Public Profile
+                Total Replies
               </p>
             </div>
           </CardContent>
@@ -123,17 +67,15 @@ export default function DashboardPage() {
 
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
-            <ShieldCheck className="h-8 w-8" />
+            <BarChart3 className="h-8 w-8" />
 
             <div>
-              <div className="text-2xl font-bold">
-                {acceptMessages
-                  ? "ON"
-                  : "OFF"}
-              </div>
+              <p className="text-2xl font-bold">
+                +18%
+              </p>
 
               <p className="text-sm text-muted-foreground">
-                Message Status
+                Weekly Growth
               </p>
             </div>
           </CardContent>
@@ -141,138 +83,157 @@ export default function DashboardPage() {
 
       </div>
 
-      {/* Profile + Settings */}
+      {/* Quick Actions */}
 
-      <div className="mb-8 grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-2">
 
-        <div className="lg:col-span-2">
-
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Public Profile
-              </CardTitle>
-
-              <CardDescription>
-                Share this link to receive
-                anonymous messages.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              <ProfileLink
-                profileUrl={profileUrl}
-              />
-            </CardContent>
-          </Card>
-
-        </div>
-
-        <div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Settings
-              </CardTitle>
-
-              <CardDescription>
-                Control whether people can
-                send you messages.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              <AcceptMessagesToggle
-                acceptMessages={
-                  acceptMessages
-                }
-                loading={
-                  isSwitchLoading
-                }
-                onToggle={
-                  updateAcceptMessages
-                }
-              />
-            </CardContent>
-          </Card>
-
-        </div>
-
-      </div>
-
-      {/* Messages Section */}
-
-      <div className="mb-4 flex items-center justify-between">
-
-        <div>
-          <h2 className="text-2xl font-semibold">
-            Messages
-          </h2>
-
-          <p className="text-muted-foreground">
-            View and manage received
-            messages.
-          </p>
-        </div>
-
-        <Button
-          variant="outline"
-          onClick={() =>
-            fetchMessages(true)
-          }
-          disabled={isMessagesLoading}
-        >
-          {isMessagesLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Refreshing
-            </>
-          ) : (
-            <>
-              <RefreshCcw className="mr-2 h-4 w-4" />
-              Refresh
-            </>
-          )}
-        </Button>
-
-      </div>
-
-      <Separator className="mb-6" />
-
-      {/* Messages Grid */}
-
-      {messages.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {messages.map((message) => (
-            <MessageCard
-              key={message._id?.toString()}
-              message={message}
-              onMessageDelete={
-                deleteMessageLocally
-              }
-            />
-          ))}
-        </div>
-      ) : (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
+          <CardHeader>
+            <CardTitle>
+              Quick Actions
+            </CardTitle>
 
-            <MessageSquare className="mb-4 h-12 w-12 text-muted-foreground" />
+            <CardDescription>
+              Common tasks you perform.
+            </CardDescription>
+          </CardHeader>
 
-            <h3 className="text-lg font-semibold">
-              No messages yet
-            </h3>
+          <CardContent className="space-y-4">
 
-            <p className="mt-2 text-center text-sm text-muted-foreground">
-              Share your profile link to
-              start receiving anonymous
-              messages.
-            </p>
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <p className="font-medium">
+                  View Inbox
+                </p>
+
+                <p className="text-sm text-muted-foreground">
+                  Read incoming anonymous message.
+                </p>
+              </div>
+
+              <ArrowUpRight className="h-4 w-4" />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <p className="font-medium">
+                  Manage Replies
+                </p>
+
+                <p className="text-sm text-muted-foreground">
+                  Continue anonymous conversations.
+                </p>
+              </div>
+
+              <ArrowUpRight className="h-4 w-4" />
+            </div>
 
           </CardContent>
         </Card>
-      )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Recent Activity
+            </CardTitle>
+
+            <CardDescription>
+              Latest events on your account.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+
+            <div className="space-y-4">
+
+              <div className="border-l-2 pl-4">
+                <p className="font-medium">
+                  New anonymous message received
+                </p>
+
+                <p className="text-sm text-muted-foreground">
+                  2 minutes ago
+                </p>
+              </div>
+
+              <div className="border-l-2 pl-4">
+                <p className="font-medium">
+                  Reply sent successfully
+                </p>
+
+                <p className="text-sm text-muted-foreground">
+                  15 minutes ago
+                </p>
+              </div>
+
+              <div className="border-l-2 pl-4">
+                <p className="font-medium">
+                  Profile link viewed
+                </p>
+
+                <p className="text-sm text-muted-foreground">
+                  1 hour ago
+                </p>
+              </div>
+
+            </div>
+
+          </CardContent>
+        </Card>
+
+      </div>
+
+      {/* Feature Status */}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            Platform Status
+          </CardTitle>
+
+          <CardDescription>
+            Current state of your EchoSpace workspace.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+
+          <div className="grid gap-4 md:grid-cols-3">
+
+            <div className="rounded-lg border p-4">
+              <p className="font-medium">
+                Inbox
+              </p>
+
+              <p className="text-sm text-muted-foreground">
+                Active
+              </p>
+            </div>
+
+            <div className="rounded-lg border p-4">
+              <p className="font-medium">
+                Anonymous Replies
+              </p>
+
+              <p className="text-sm text-muted-foreground">
+                Enabled
+              </p>
+            </div>
+
+            <div className="rounded-lg border p-4">
+              <p className="font-medium">
+                Analytics
+              </p>
+
+              <p className="text-sm text-muted-foreground">
+                Coming Soon
+              </p>
+            </div>
+
+          </div>
+
+        </CardContent>
+      </Card>
 
     </div>
   );

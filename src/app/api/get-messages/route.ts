@@ -55,7 +55,7 @@ export async function GET() {
       },
     ]);
 
-    if (!foundUser || foundUser.length === 0) {
+    if (!foundUser) {
       return Response.json(
         {
           success: false,
@@ -66,6 +66,18 @@ export async function GET() {
         }
       );
     }
+    if( foundUser.length === 0) {
+      return Response.json(
+        {
+          success: false,
+          message: "Messages not found",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
 
     return Response.json(
       {
@@ -78,12 +90,12 @@ export async function GET() {
     );
 
   } catch (error) {
-    console.error("Error getting messages:", error);
+    console.error("Error getting message:", error);
 
     return Response.json(
       {
         success: false,
-        message: "Unexpected error while fetching messages",
+        message: "Unexpected error while fetching message",
       },
       {
         status: 500,

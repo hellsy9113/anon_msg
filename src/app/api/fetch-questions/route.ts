@@ -41,18 +41,23 @@ export async function GET() {
           createdAt: 1,
           messages: {
             $sortArray: {
-              input: "$message",
-              $sortBy: {
+              input: "$messages",
+              sortBy: {
                 createdAt: -1,
               },
             },
           },
           totalMessages: {
-            $size: "$message",
+            $size: "$messages",
           },
         },
       },
     ]);
+    return NextResponse.json(
+      {
+        questions:foundQues,
+      }
+    )
   } catch (error) {
     console.log("error fetching question", error);
     return NextResponse.json(

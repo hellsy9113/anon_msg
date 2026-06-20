@@ -32,13 +32,13 @@ export async function POST(request: Request) {
    {
     return Response.json({
       success:false,
-      message:"failed to update user status to accept messages"
+      message:"failed to update user status to accept message"
     },{status:401})
    }
    else{
       return Response.json({
       success:true,
-      message:"success to update user status to accept messages",
+      message:"success to update user status to accept message",
       updatedUser
     },{status:200})
    }
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     return Response.json(
       {
     success:false,
-    message:"failed to update user status to update messages"
+    message:"failed to update user status to update message"
        } ,
   {status:401}
     )
@@ -87,7 +87,7 @@ try{
   
     return Response.json({
       success:true,
-      isAcceptingMessages:FoundUser.isAcceptingMessage
+      isAcceptingMessage:FoundUser.isAcceptingMessage
     },{status:200})
 }
 catch(error)

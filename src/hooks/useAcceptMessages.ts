@@ -18,7 +18,7 @@ export function useAcceptMessages() {
 
         const response =
           await axios.get<ApiResponse>(
-            "/api/accept-messages"
+            "/api/accept-message"
           );
 
         setAcceptMessages(
@@ -45,7 +45,7 @@ export function useAcceptMessages() {
 
         const response =
           await axios.post<ApiResponse>(
-            "/api/accept-messages",
+            "/api/accept-message",
             {
               acceptMessages: checked,
             }
