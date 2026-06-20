@@ -2,9 +2,7 @@ import crypto from "crypto";
 
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/modal/user";
-import QuesModel from "@/modal/question";
-import mongoose from "mongoose";
-import { messageSchema } from "@/schemas/messageSchema";
+import crypto from "crypto"
 
 export async function POST(request: Request) {
     await dbConnect();
