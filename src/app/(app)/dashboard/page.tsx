@@ -19,8 +19,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { useMessages } from "@/hooks/useMessages";
-import { useQuestions } from "@/hooks/question/useQuestion";
+import { useMessages } from "@/features/messages/hooks/useMessages";
+import { useQuestions } from "@/features/questions/hooks/useQuestion";
 
 export default function DashboardPage() {
   const {

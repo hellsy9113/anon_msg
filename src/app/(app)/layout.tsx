@@ -1,6 +1,6 @@
 'use client';
 
-import Navbar from '@/components/Navbar';
+import Navbar from '@/components/layout/Navbar';
 import { Analytics } from '@vercel/analytics/next';
 import { useSession } from 'next-auth/react';
 import { Loader2 } from 'lucide-react';

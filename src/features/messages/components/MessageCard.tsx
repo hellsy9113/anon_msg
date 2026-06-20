@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from "react";
+import { isAxiosError } from "axios";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
-} from "./ui/card";
+} from "@/components/ui/card";
 
 import {
   AlertDialog,
@@ -26,8 +27,10 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { Message } from "@/modal/user";
 import { ApiResponse } from "@/types/ApiResponse";
-
-import axios from "axios";
+import {
+  deleteMessageById,
+  replyToMessageById,
+} from "@/features/messages/services/messages.service";
 
 import {
   Loader2,
@@ -53,20 +56,25 @@ const MessageCard = ({
 
   const handleDeleteConfirm = async () => {
     try {
-      const response = await axios.delete<ApiResponse>(
-        `/api/delete-message/${message._id?.toString()}`
-      );
+      const response =
+        await deleteMessageById(
+          message._id?.toString() as string
+        );
 
-      toast.success(response.data.message);
+      toast.success(response.message);
 
       onMessageDelete(message._id?.toString() as string);
 
     } catch (error) {
-      const errorMessage = axios.isAxiosError<ApiResponse>(error)
+      const axiosErrorMessage =
+        isAxiosError<ApiResponse>(error)
         ? error.response?.data.message
         : undefined;
 
-      toast.error(errorMessage ?? "Failed to delete message");
+      toast.error(
+        axiosErrorMessage ??
+          "Failed to delete message"
+      );
     }
   };
 
@@ -79,23 +87,27 @@ const MessageCard = ({
     try {
       setLoading(true);
 
-      const response = await axios.post<ApiResponse>(
-        `/api/reply-message/${message._id?.toString()}`,
-        {
+      const response =
+        await replyToMessageById({
+          messageId:
+            message._id?.toString() as string,
           content: reply,
-        }
-      );
+        });
 
-      toast.success(response.data.message);
+      toast.success(response.message);
 
       setReply("");
 
     } catch (error) {
-      const errorMessage = axios.isAxiosError<ApiResponse>(error)
+      const axiosErrorMessage =
+        isAxiosError<ApiResponse>(error)
         ? error.response?.data.message
         : undefined;
 
-      toast.error(errorMessage ?? "Failed to send reply");
+      toast.error(
+        axiosErrorMessage ??
+          "Failed to send reply"
+      );
     } finally {
       setLoading(false);
     }

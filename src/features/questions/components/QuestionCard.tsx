@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Question } from "@/types/Question";
+import { Question } from "@/features/questions/types/question";
 import {
   Card,
   CardContent,

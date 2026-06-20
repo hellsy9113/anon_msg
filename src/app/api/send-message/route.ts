@@ -1,7 +1,7 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/modal/user";
 import crypto from "crypto"
-import { messageSchema } from "@/schemas/messageSchema";
+import { messageSchema } from "@/features/messages/schemas/messageSchema";
 import mongoose from "mongoose";
 import QuesModel
  from "@/modal/question";
