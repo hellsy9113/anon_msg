@@ -11,6 +11,7 @@ import {
   MessageSquare,
   LayoutDashboard,
   LogOut,
+  ShieldCheck,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -27,23 +28,17 @@ const Navbar = () => {
     "U";
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-xl">
-
+    <header className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-
-        {/* Logo */}
-
         <Link
           href="/dashboard"
           className="flex items-center gap-3"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border bg-muted">
-
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-card shadow-sm">
             <MessageSquare className="h-5 w-5" />
-
           </div>
 
-          <div className="flex flex-col">
+          <div className="hidden flex-col sm:flex">
             <span className="text-lg font-bold leading-none">
               EchoSpace
             </span>
@@ -54,14 +49,9 @@ const Navbar = () => {
           </div>
         </Link>
 
-        {/* Right Section */}
-
         {session ? (
-          <div className="flex items-center gap-3">
-
-            {/* Dashboard */}
-
-            <Link href="/dashboard">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link href="/dashboard" className="hidden sm:block">
               <Button
                 variant="ghost"
                 size="sm"
@@ -72,19 +62,15 @@ const Navbar = () => {
               </Button>
             </Link>
 
-            {/* User */}
-
-            <div className="hidden items-center gap-3 rounded-full border px-3 py-1.5 md:flex">
-
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-
+            <div className="hidden items-center gap-3 rounded-lg border bg-card px-3 py-1.5 shadow-sm md:flex">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground">
                 {initials}
-
               </div>
 
               <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">
-                  Signed in as
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <ShieldCheck className="h-3 w-3" />
+                  Verified session
                 </span>
 
                 <span className="text-sm font-medium">
@@ -95,27 +81,20 @@ const Navbar = () => {
 
             </div>
 
-            {/* Mobile Avatar */}
-
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground md:hidden">
-
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-foreground md:hidden">
               {initials}
-
             </div>
-
-            {/* Logout */}
 
             <Button
               variant="outline"
               size="sm"
               onClick={() => signOut({
-    redirect: true,
-    callbackUrl: "/",
-  })}
+                redirect: true,
+                callbackUrl: "/",
+              })}
             >
-              <LogOut className="mr-2 h-4 w-4" />
-
-              Logout
+              <LogOut className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Logout</span>
             </Button>
 
           </div>

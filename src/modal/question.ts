@@ -1,10 +1,11 @@
-import mongoose ,{Schema} from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { Message,MessageSchema} from "./user";
  export interface Question {
     _id?:mongoose.Types.ObjectId,
     content:string,
     createdAt:Date,
     userId:mongoose.Types.ObjectId,
+    isAcceptingMessage:boolean,
     messages:Message[]
 }
 
@@ -22,6 +23,10 @@ const QuesSchema:Schema<Question>=new Schema({
         type:Schema.Types.ObjectId,
         ref:"User",
         required:true
+    },
+    isAcceptingMessage: {
+        type: Boolean,
+        default: true,
     },
     messages:[MessageSchema]
 });

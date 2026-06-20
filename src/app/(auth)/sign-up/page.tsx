@@ -1,32 +1,44 @@
-'use client';
+"use client";
 
-import { ApiResponse } from '@/types/ApiResponse';
-import { zodResolver } from '@hookform/resolvers/zod';
-import axios, { AxiosError } from 'axios';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useDebounceValue } from 'usehooks-ts';
-import { Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import * as z from 'zod';
+import { ApiResponse } from "@/types/ApiResponse";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios, { AxiosError } from "axios";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useDebounceValue } from "usehooks-ts";
+import {
+  CheckCircle2,
+  Loader2,
+  MessageSquare,
+  UserPlus,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import * as z from "zod";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Form,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
-import { signUpSchema } from '@/schemas/signupSchema';
+import { signUpSchema } from "@/schemas/signupSchema";
 
 export default function SignUpForm() {
-  const [username, setUsername] = useState('');
-  const [usernameMessage, setUsernameMessage] = useState('');
+  const [username, setUsername] = useState("");
+  const [usernameMessage, setUsernameMessage] = useState("");
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -37,9 +49,9 @@ export default function SignUpForm() {
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      username: '',
-      email: '',
-      password: '',
+      username: "",
+      email: "",
+      password: "",
     },
   });
 
@@ -48,7 +60,7 @@ export default function SignUpForm() {
       if (!debouncedUsername) return;
 
       setIsCheckingUsername(true);
-      setUsernameMessage('');
+      setUsernameMessage("");
 
       try {
         const response = await axios.get<ApiResponse>(
@@ -61,7 +73,7 @@ export default function SignUpForm() {
 
         setUsernameMessage(
           axiosError.response?.data.message ??
-            'Error checking username'
+            "Error checking username"
         );
       } finally {
         setIsCheckingUsername(false);
@@ -78,7 +90,7 @@ export default function SignUpForm() {
 
     try {
       const response = await axios.post<ApiResponse>(
-        '/api/sign-up',
+        "/api/sign-up",
         data
       );
 
@@ -86,13 +98,11 @@ export default function SignUpForm() {
 
       router.replace(`/verify/${data.username}`);
     } catch (error) {
-      console.error('Error during sign up:', error);
-
       const axiosError = error as AxiosError<ApiResponse>;
 
       const errorMessage =
         axiosError.response?.data.message ??
-        'There was a problem with your sign up. Please try again.';
+        "There was a problem with your sign up. Please try again.";
 
       toast.error(errorMessage);
     } finally {
@@ -100,209 +110,174 @@ export default function SignUpForm() {
     }
   };
 
- return (
-  <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
+  const usernameIsAvailable =
+    usernameMessage === "Username is unique";
 
-    {/* Floating blobs */}
-
-    <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
-
-    <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
-
-    {/* Floating message cards */}
-
-    <div className="absolute left-10 top-32 hidden rotate-[-8deg] rounded-xl border bg-background/80 px-5 py-3 shadow-lg backdrop-blur lg:block">
-      💬 You inspire me.
-    </div>
-
-    <div className="absolute right-16 top-40 hidden rotate-6 rounded-xl border bg-background/80 px-5 py-3 shadow-lg backdrop-blur lg:block">
-      💬 Keep going!
-    </div>
-
-    <div className="absolute bottom-40 left-24 hidden rotate-3 rounded-xl border bg-background/80 px-5 py-3 shadow-lg backdrop-blur lg:block">
-      💬 What&#39;s your dream?
-    </div>
-
-    <div className="absolute bottom-24 right-32 hidden rotate-[-5deg] rounded-xl border bg-background/80 px-5 py-3 shadow-lg backdrop-blur lg:block">
-      💬 You&#39;re amazing.
-    </div>
-
-    {/* Main Card */}
-
-    <div className="relative z-10 w-full max-w-md">
-
-      <div className="rounded-3xl border bg-background/80 p-8 shadow-2xl backdrop-blur">
-
-        {/* Brand */}
-
-        <div className="mb-8 text-center">
-
-          <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground text-2xl font-bold">
-            💬
+  return (
+    <main className="mx-auto flex min-h-screen w-full max-w-6xl items-center px-4 py-8">
+      <div className="grid w-full gap-8 lg:grid-cols-[1fr_440px] lg:items-center">
+        <section className="hidden max-w-xl space-y-5 lg:block">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg border bg-card shadow-sm">
+            <MessageSquare className="h-6 w-6 text-primary" />
           </div>
 
-          <h1 className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-4xl font-bold text-transparent">
-            EchoSpace
-          </h1>
+          <div>
+            <p className="text-sm font-medium uppercase text-muted-foreground">
+              EchoSpace
+            </p>
 
-          <p className="mt-3 text-muted-foreground">
-            Create your anonymous inbox and
-            start receiving honest feedback.
-          </p>
+            <h1 className="mt-2 text-4xl font-bold leading-tight">
+              Create a private inbox for honest feedback.
+            </h1>
 
-        </div>
+            <p className="mt-4 text-muted-foreground">
+              Share one public link, receive anonymous messages, and reply without asking senders to create an account.
+            </p>
+          </div>
+        </section>
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-5"
-          >
-            {/* Username */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">
+              Create account
+            </CardTitle>
 
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
+            <CardDescription>
+              We will send a verification code before opening your inbox.
+            </CardDescription>
+          </CardHeader>
 
-                  <FormLabel>
-                    Username
-                  </FormLabel>
+          <CardContent>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-5"
+              >
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Username
+                      </FormLabel>
 
-                  <Input
-                    placeholder="john_doe"
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setUsername(
-                        e.target.value
-                      );
-                    }}
-                  />
+                      <Input
+                        placeholder="john_doe"
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          setUsername(
+                            e.target.value
+                          );
+                        }}
+                      />
 
-                  <div className="min-h-[20px]">
-
-                    {isCheckingUsername ? (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-
-                        <Loader2 className="h-4 w-4 animate-spin" />
-
-                        Checking username...
-
+                      <div className="min-h-5">
+                        {isCheckingUsername ? (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Checking username
+                          </div>
+                        ) : (
+                          usernameMessage && (
+                            <p
+                              className={`flex items-center gap-1.5 text-sm ${
+                                usernameIsAvailable
+                                  ? "text-primary"
+                                  : "text-destructive"
+                              }`}
+                            >
+                              {usernameIsAvailable && (
+                                <CheckCircle2 className="h-4 w-4" />
+                              )}
+                              {usernameMessage}
+                            </p>
+                          )
+                        )}
                       </div>
-                    ) : (
-                      usernameMessage && (
-                        <p
-                          className={`text-sm ${
-                            usernameMessage ===
-                            "Username is unique"
-                              ? "text-green-500"
-                              : "text-red-500"
-                          }`}
-                        >
-                          {usernameMessage}
-                        </p>
-                      )
-                    )}
 
-                  </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <FormMessage />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Email
+                      </FormLabel>
 
-                </FormItem>
-              )}
-            />
+                      <Input
+                        type="email"
+                        placeholder="john@example.com"
+                        {...field}
+                      />
 
-            {/* Email */}
+                      <p className="text-xs text-muted-foreground">
+                        Your verification code will be sent here.
+                      </p>
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <FormLabel>
-                    Email
-                  </FormLabel>
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Password
+                      </FormLabel>
 
-                  <Input
-                    type="email"
-                    placeholder="john@example.com"
-                    {...field}
-                  />
+                      <Input
+                        type="password"
+                        placeholder="At least 8 characters"
+                        {...field}
+                      />
 
-                  <p className="text-xs text-muted-foreground">
-                    We&#39;ll send a verification
-                    code to this email.
-                  </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <FormMessage />
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Creating account
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4" />
+                      Create Account
+                    </>
+                  )}
+                </Button>
+              </form>
+            </Form>
 
-                </FormItem>
-              )}
-            />
-
-            {/* Password */}
-
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-
-                  <FormLabel>
-                    Password
-                  </FormLabel>
-
-                  <Input
-                    type="password"
-                    placeholder="••••••••"
-                    {...field}
-                  />
-
-                  <FormMessage />
-
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              className="w-full h-11 text-base"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Account...
-                </>
-              ) : (
-                "Create Account"
-              )}
-            </Button>
-
-          </form>
-        </Form>
-
-        <div className="mt-8 text-center">
-
-          <p className="text-sm text-muted-foreground">
-            Already have an account?
-          </p>
-
-          <Link
-            href="/sign-in"
-            className="mt-2 inline-block font-semibold text-primary hover:underline"
-          >
-            Sign In
-          </Link>
-
-        </div>
-
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <Link
+                href="/sign-in"
+                className="font-medium text-primary hover:underline"
+              >
+                Sign in
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
       </div>
-
-    </div>
-
-  </div>
-);
+    </main>
+  );
 }

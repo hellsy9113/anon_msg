@@ -7,7 +7,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 
-import { MessageSquare } from "lucide-react";
+import { ArrowUpRight, MessageSquare, ShieldCheck, ShieldOff } from "lucide-react";
 
 export default function QuestionCard({
   question,
@@ -18,21 +18,36 @@ export default function QuestionCard({
 
   return (
     <Card
-      className="cursor-pointer transition hover:shadow-md"
+      className="group cursor-pointer transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
       onClick={() =>
         router.push(
           `/dashboard/question/${question._id}`
         )
       }
     >
-      <CardContent className="pt-6">
-        <h3 className="font-medium">
-          {question.content}
-        </h3>
+      <CardContent className="space-y-5 p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-3">
+            <h3 className="text-base font-semibold leading-6">
+              {question.content}
+            </h3>
 
-        <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="inline-flex items-center gap-2 rounded-full border bg-muted/30 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+              {question.isAcceptingMessage ? (
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+              ) : (
+                <ShieldOff className="h-3.5 w-3.5" />
+              )}
+              {question.isAcceptingMessage ? "Accepting responses" : "Responses paused"}
+            </div>
+          </div>
+
+          <ArrowUpRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
+        </div>
+
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <MessageSquare className="h-4 w-4" />
-          {question.totalMessages} message
+          {question.totalMessages} {question.totalMessages === 1 ? "response" : "responses"}
         </div>
       </CardContent>
     </Card>

@@ -4,15 +4,14 @@ import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 
 import {
-  RefreshCcw,
+  Link2,
   Loader2,
   MessageSquare,
-  Link2,
+  RefreshCcw,
   ShieldCheck,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 
 import {
   Card,
@@ -66,153 +65,19 @@ export default function DashboardPage() {
   ]);
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-sm font-medium uppercase text-muted-foreground">
+            Inbox
+          </p>
 
-      {/* Welcome Banner */}
-
-      <Card className="mb-8">
-        <CardContent className="py-8">
-          <h1 className="text-4xl font-bold tracking-tight">
-            Welcome back,
-            {" "}
-            {username}
+          <h1 className="mt-1 text-3xl font-bold">
+            Anonymous messages
           </h1>
 
-          <p className="mt-2 text-muted-foreground">
-            Manage your profile and incoming
-            anonymous message.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Stats */}
-
-      <div className="mb-8 grid gap-4 md:grid-cols-3">
-
-        <Card>
-          <CardContent className="flex items-center gap-4 pt-6">
-            <MessageSquare className="h-8 w-8" />
-
-            <div>
-              <div className="text-2xl font-bold">
-                {messages.length}
-              </div>
-
-              <p className="text-sm text-muted-foreground">
-                Total Messages
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-center gap-4 pt-6">
-            <Link2 className="h-8 w-8" />
-
-            <div>
-              <div className="text-2xl font-bold">
-                Active
-              </div>
-
-              <p className="text-sm text-muted-foreground">
-                Public Profile
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-center gap-4 pt-6">
-            <ShieldCheck className="h-8 w-8" />
-
-            <div>
-              <div className="text-2xl font-bold">
-                {acceptMessages
-                  ? "ON"
-                  : "OFF"}
-              </div>
-
-              <p className="text-sm text-muted-foreground">
-                Message Status
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-      </div>
-
-      {/* Profile + Settings */}
-
-      <div className="mb-8 grid gap-6 lg:grid-cols-3">
-
-        <div className="lg:col-span-2">
-
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Public Profile
-              </CardTitle>
-
-              <CardDescription>
-                Share this link to receive
-                anonymous message.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              <ProfileLink
-                profileUrl={profileUrl}
-              />
-            </CardContent>
-          </Card>
-
-        </div>
-
-        <div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Settings
-              </CardTitle>
-
-              <CardDescription>
-                Control whether people can
-                send you message.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              <AcceptMessagesToggle
-                acceptMessages={
-                  acceptMessages
-                }
-                loading={
-                  isSwitchLoading
-                }
-                onToggle={
-                  updateAcceptMessages
-                }
-              />
-            </CardContent>
-          </Card>
-
-        </div>
-
-      </div>
-
-      {/* Messages Section */}
-
-      <div className="mb-4 flex items-center justify-between">
-
-        <div>
-          <h2 className="text-2xl font-semibold">
-            Messages
-          </h2>
-
-          <p className="text-muted-foreground">
-            View and manage received
-            message.
+          <p className="mt-2 max-w-2xl text-muted-foreground">
+            Share your profile link, review incoming messages, and reply without exposing the sender.
           </p>
         </div>
 
@@ -225,55 +90,170 @@ export default function DashboardPage() {
         >
           {isMessagesLoading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               Refreshing
             </>
           ) : (
             <>
-              <RefreshCcw className="mr-2 h-4 w-4" />
+              <RefreshCcw className="h-4 w-4" />
               Refresh
             </>
           )}
         </Button>
-
       </div>
 
-      <Separator className="mb-6" />
-
-      {/* Messages Grid */}
-
-      {messages.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {messages.map((message) => (
-            <MessageCard
-              key={message._id?.toString()}
-              message={message}
-              onMessageDelete={
-                deleteMessageLocally
-              }
-            />
-          ))}
-        </div>
-      ) : (
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
+          <CardContent className="flex items-center gap-4 p-5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <MessageSquare className="h-5 w-5" />
+            </div>
 
-            <MessageSquare className="mb-4 h-12 w-12 text-muted-foreground" />
+            <div>
+              <div className="text-2xl font-bold">
+                {messages.length}
+              </div>
 
-            <h3 className="text-lg font-semibold">
-              No message yet
-            </h3>
-
-            <p className="mt-2 text-center text-sm text-muted-foreground">
-              Share your profile link to
-              start receiving anonymous
-              message.
-            </p>
-
+              <p className="text-sm text-muted-foreground">
+                Total messages
+              </p>
+            </div>
           </CardContent>
         </Card>
-      )}
 
+        <Card>
+          <CardContent className="flex items-center gap-4 p-5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-md bg-accent text-accent-foreground">
+              <Link2 className="h-5 w-5" />
+            </div>
+
+            <div>
+              <div className="text-2xl font-bold">
+                Active
+              </div>
+
+              <p className="text-sm text-muted-foreground">
+                Public profile
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="flex items-center gap-4 p-5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+
+            <div>
+              <div className="text-2xl font-bold">
+                {acceptMessages
+                  ? "Open"
+                  : "Paused"}
+              </div>
+
+              <p className="text-sm text-muted-foreground">
+                Message status
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Public profile link
+            </CardTitle>
+
+            <CardDescription>
+              Anyone with this link can send one anonymous message.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <ProfileLink
+              profileUrl={profileUrl}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Inbox access
+            </CardTitle>
+
+            <CardDescription>
+              Pause new messages when you need quiet time.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <AcceptMessagesToggle
+              acceptMessages={
+                acceptMessages
+              }
+              loading={
+                isSwitchLoading
+              }
+              onToggle={
+                updateAcceptMessages
+              }
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold">
+            Message queue
+          </h2>
+
+          <p className="text-sm text-muted-foreground">
+            Newest messages appear first.
+          </p>
+        </div>
+
+        {isMessagesLoading && messages.length === 0 ? (
+          <Card>
+            <CardContent className="flex items-center gap-3 p-6 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              Loading messages
+            </CardContent>
+          </Card>
+        ) : messages.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {messages.map((message) => (
+              <MessageCard
+                key={message._id?.toString()}
+                message={message}
+                onMessageDelete={
+                  deleteMessageLocally
+                }
+              />
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center p-10 text-center">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                <MessageSquare className="h-6 w-6" />
+              </div>
+
+              <h3 className="text-lg font-semibold">
+                No messages yet
+              </h3>
+
+              <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+                Share your public profile link to start receiving anonymous messages.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </section>
     </div>
   );
 }

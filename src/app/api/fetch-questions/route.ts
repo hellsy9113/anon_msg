@@ -39,6 +39,9 @@ export async function GET() {
         $project: {
           content: 1,
           createdAt: 1,
+          isAcceptingMessage: {
+            $ifNull: ["$isAcceptingMessage", true],
+          },
           messages: {
             $sortArray: {
               input: "$messages",

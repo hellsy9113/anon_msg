@@ -33,6 +33,7 @@ export async function POST(request: Request) {
       content,
       createdAt: new Date(),
       userId,
+      isAcceptingMessage: true,
       messages: [],
     });
     await newQuestion.save();

@@ -6,27 +6,31 @@ import axios from "axios";
 import { toast } from "sonner";
 
 import {
+  Copy,
+  KeyRound,
+  Loader2,
+  MessageSquare,
+  RefreshCcw,
+  Send,
+} from "lucide-react";
+
+import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-
-import {
-  Send,
-  Copy,
-  MessageSquare,
-  Loader2,
-} from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { messageSchema } from "@/schemas/messageSchema";
 
 interface Question {
   _id: string;
   content: string;
+  isAcceptingMessage: boolean;
 }
 
 interface Reply {
@@ -89,12 +93,12 @@ export default function PublicQuestionPage() {
 
         setQuestion(response.data.question);
       } catch (error) {
-        const message = axios.isAxiosError<{ message?: string }>(error)
+        const errorMessage = axios.isAxiosError<{ message?: string }>(error)
           ? error.response?.data?.message
           : undefined;
 
         toast.error(
-          message ?? "Unable to load question."
+          errorMessage ?? "Unable to load question."
         );
       } finally {
         setLoading(false);
@@ -107,10 +111,12 @@ export default function PublicQuestionPage() {
   }, [username, questionId]);
 
   const handleSend = async () => {
-    if (!message.trim()) {
-      toast.error(
-        "Please enter a message."
-      );
+    const validationResult = messageSchema.safeParse({
+      content: message,
+    });
+
+    if (!validationResult.success) {
+      toast.error(validationResult.error.issues[0]?.message ?? "Please enter a valid message.");
       return;
     }
 
@@ -122,7 +128,7 @@ export default function PublicQuestionPage() {
         {
           username,
           questionId,
-          content: message,
+          content: validationResult.data.content,
         }
       );
 
@@ -134,6 +140,9 @@ export default function PublicQuestionPage() {
         response.data.replyAccessToken
       );
       setReplyToken(
+        response.data.replyAccessToken
+      );
+      setSavedToken(
         response.data.replyAccessToken
       );
 
@@ -201,346 +210,255 @@ export default function PublicQuestionPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto max-w-2xl py-10 flex justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+      <main className="mx-auto max-w-3xl px-4 py-8">
+        <Card>
+          <CardContent className="flex items-center gap-3 p-6 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            Loading question
+          </CardContent>
+        </Card>
+      </main>
     );
   }
 
   if (!question) {
     return (
-      <div className="container mx-auto max-w-2xl py-10">
-        Question not found.
-      </div>
+      <main className="mx-auto max-w-3xl px-4 py-8">
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center p-10 text-center">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-muted text-muted-foreground">
+              <MessageSquare className="h-6 w-6" />
+            </div>
+
+            <h1 className="text-xl font-semibold">
+              Question not found
+            </h1>
+
+            <p className="mt-2 text-sm text-muted-foreground">
+              This prompt may have been removed or is no longer available.
+            </p>
+          </CardContent>
+        </Card>
+      </main>
     );
   }
 
   return (
-    <div className="container mx-auto max-w-2xl space-y-8 py-10">
-      {/* Hero */}
+    <main className="mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <section className="space-y-6">
+        <div className="space-y-2">
+          <p className="text-sm font-medium uppercase text-muted-foreground">
+            Anonymous response
+          </p>
 
-      <Card>
+          <h1 className="text-3xl font-bold">
+            @{username} asked
+          </h1>
+        </div>
 
-        <CardHeader>
+        <Card className="border-l-4 border-l-primary">
+          <CardContent className="p-6">
+            <p className="text-lg font-semibold leading-8">
+              {question.content}
+            </p>
+          </CardContent>
+        </Card>
 
-          <CardTitle className="text-3xl">
-            Anonymous Message
-          </CardTitle>
+        {!question.isAcceptingMessage && (
+          <Card className="border-amber-200 bg-amber-50/80">
+            <CardContent className="p-5 text-sm text-amber-900">
+              @{username} has paused responses for this question right now. You can still keep your reply token and check past replies, but new answers are closed for the moment.
+            </CardContent>
+          </Card>
+        )}
 
-          <CardDescription>
-            Send an anonymous response to{" "}
-            <span className="font-semibold">
-              @{username}
-            </span>
-          </CardDescription>
-
-        </CardHeader>
-
-      </Card>
-
-      {/* Question */}
-
-      <Card className="border-primary">
-
-        <CardHeader>
-
-          <CardDescription>
-            Question
-          </CardDescription>
-
-          <CardTitle className="text-2xl leading-relaxed">
-            {question.content}
-          </CardTitle>
-
-        </CardHeader>
-
-      </Card>
-
-      {/* Write Message */}
-
-      <Card>
-
-        <CardHeader>
-
-          <CardTitle>
-            Your Anonymous Message
-          </CardTitle>
-
-          <CardDescription>
-            Your identity is never shared.
-          </CardDescription>
-
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-
-          <Textarea
-            rows={8}
-            placeholder="Write your anonymous message..."
-            value={message}
-            onChange={(e) =>
-              setMessage(e.target.value)
-            }
-          />
-
-          <div className="flex justify-between">
-
-            {/* <Button
-              variant="outline"
-              onClick={handleSuggest}
-              disabled={suggesting}
-            >
-              {suggesting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Suggest Message
-                </>
-              )}
-            </Button> */}
-
-            <Button
-              onClick={handleSend}
-              disabled={
-                sending ||
-                !message.trim()
-              }
-            >
-              {sending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Send className="mr-2 h-4 w-4" />
-                  Send Message
-                </>
-              )}
-            </Button>
-
-          </div>
-
-        </CardContent>
-
-      </Card>
-
-      {/* Reply Token */}
-
-      {replyToken && (
-
-        <Card className="border-green-500">
-
+        <Card>
           <CardHeader>
-
             <CardTitle>
-              Message Sent Successfully
+              Your response
             </CardTitle>
 
             <CardDescription>
-              Save this reply token carefully.
-              You will need it later to
-              read replies.
+              Send one anonymous answer. Save the token if you want to read replies.
             </CardDescription>
-
           </CardHeader>
 
           <CardContent className="space-y-4">
+            <Textarea
+              rows={8}
+              placeholder="Write your anonymous response..."
+              value={message}
+              onChange={(e) =>
+                setMessage(e.target.value)
+              }
+              className="min-h-40 resize-none bg-background"
+              disabled={!question.isAcceptingMessage}
+            />
 
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-muted-foreground">
+                {message.trim().length}/300 characters
+              </p>
+
+              <Button
+                onClick={handleSend}
+                disabled={
+                  sending ||
+                  !message.trim() ||
+                  !question.isAcceptingMessage
+                }
+                className="sm:w-44"
+              >
+                {sending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Sending
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4" />
+                    Send Response
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <aside className="space-y-6">
+        {replyToken && (
+          <Card className="border-primary/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <KeyRound className="h-5 w-5 text-primary" />
+                Reply token
+              </CardTitle>
+
+              <CardDescription>
+                Keep this token to check for replies later.
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <Input
+                readOnly
+                value={replyToken}
+                className="font-mono text-xs"
+              />
+
+              <Button
+                className="w-full"
+                onClick={handleCopy}
+              >
+                <Copy className="h-4 w-4" />
+                Copy Token
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <RefreshCcw className="h-5 w-5 text-primary" />
+              View replies
+            </CardTitle>
+
+            <CardDescription>
+              Paste your token to check whether @{username} responded.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
             <Input
-              readOnly
-              value={replyToken}
+              placeholder="Paste your reply token..."
+              value={savedToken}
+              onChange={(e) =>
+                setSavedToken(
+                  e.target.value
+                )
+              }
             />
 
             <Button
               className="w-full"
-              onClick={handleCopy}
+              onClick={handleViewReplies}
+              disabled={
+                fetchingReplies ||
+                !savedToken.trim()
+              }
             >
-              <Copy className="mr-2 h-4 w-4" />
-              Copy Reply Token
+              {fetchingReplies ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading
+                </>
+              ) : (
+                <>
+                  <MessageSquare className="h-4 w-4" />
+                  View Replies
+                </>
+              )}
             </Button>
-
           </CardContent>
-
         </Card>
 
-      )}
+        {replyData && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">
+                Conversation
+              </CardTitle>
 
-      {/* Reply Lookup */}
+              <CardDescription>
+                Your anonymous response and owner replies.
+              </CardDescription>
+            </CardHeader>
 
-      <Card>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-xs font-medium uppercase text-muted-foreground">
+                  Your response
+                </p>
 
-        <CardHeader>
-
-          <CardTitle>
-            View Replies
-          </CardTitle>
-
-          <CardDescription>
-            Enter your reply token to
-            check whether the owner has
-            responded.
-          </CardDescription>
-
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-
-          <Input
-            placeholder="Paste your reply token..."
-            value={savedToken}
-            onChange={(e) =>
-              setSavedToken(
-                e.target.value
-              )
-            }
-          />
-
-          <Button
-            className="w-full"
-            onClick={handleViewReplies}
-            disabled={
-              fetchingReplies ||
-              !savedToken.trim()
-            }
-          >
-            {fetchingReplies ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              <>
-                <MessageSquare className="mr-2 h-4 w-4" />
-                View Replies
-              </>
-            )}
-          </Button>
-
-        </CardContent>
-
-      </Card>
-      {/* Replies */}
-
-      {replyData && (
-
-        <Card>
-
-          <CardHeader>
-
-            <CardTitle>
-              Conversation
-            </CardTitle>
-
-            <CardDescription>
-              Your anonymous message and any replies you&apos;ve received.
-            </CardDescription>
-
-          </CardHeader>
-
-          <CardContent className="space-y-8">
-
-            {/* Original Message */}
-
-            <div className="space-y-2">
-
-              <h3 className="font-semibold">
-                Your Message
-              </h3>
-
-              <div className="rounded-lg border bg-muted/30 p-4">
-
-                <p className="leading-relaxed">
+                <p className="mt-2 rounded-lg border bg-muted/30 p-3 text-sm leading-6">
                   {replyData.originalMessage}
                 </p>
-
-                <p className="mt-3 text-xs text-muted-foreground">
-                  Sent on{" "}
-                  {new Date(
-                    replyData.createdAt
-                  ).toLocaleString()}
-                </p>
-
               </div>
 
-            </div>
-
-            {/* Replies */}
-
-            <div className="space-y-4">
-
-              <h3 className="font-semibold">
-                Replies
-              </h3>
+              <Separator />
 
               {replyData.replies.length > 0 ? (
-
-                <div className="space-y-4">
-
+                <div className="space-y-3">
                   {replyData.replies.map(
                     (reply, index) => (
-
-                      <Card
+                      <div
                         key={index}
-                        className="border-l-4"
+                        className="rounded-lg border p-3"
                       >
+                        <p className="text-sm leading-6">
+                          {reply.content}
+                        </p>
 
-                        <CardContent className="pt-6">
-
-                          <p className="leading-relaxed">
-                            {reply.content}
-                          </p>
-
-                          <p className="mt-3 text-xs text-muted-foreground">
-                            {new Date(
-                              reply.createdAt
-                            ).toLocaleString()}
-                          </p>
-
-                        </CardContent>
-
-                      </Card>
-
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {new Date(
+                            reply.createdAt
+                          ).toLocaleString()}
+                        </p>
+                      </div>
                     )
                   )}
-
                 </div>
-
               ) : (
-
-                <Card>
-
-                  <CardContent className="flex flex-col items-center justify-center py-10">
-
-                    <MessageSquare className="mb-4 h-10 w-10 text-muted-foreground" />
-
-                    <h3 className="text-lg font-semibold">
-                      No replies yet
-                    </h3>
-
-                    <p className="mt-2 text-center text-sm text-muted-foreground">
-                      The owner hasn&apos;t replied to your
-                      anonymous message yet.
-                    </p>
-
-                  </CardContent>
-
-                </Card>
-
+                <p className="text-sm text-muted-foreground">
+                  No replies yet.
+                </p>
               )}
-
-            </div>
-
-          </CardContent>
-
-        </Card>
-
-      )}
-
-    </div>
+            </CardContent>
+          </Card>
+        )}
+      </aside>
+    </main>
   );
 }

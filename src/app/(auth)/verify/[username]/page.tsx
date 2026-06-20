@@ -1,7 +1,7 @@
 "use client";
-import { signUpSchema } from "@/schemas/signupSchema";
+
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,8 +9,16 @@ import axios from "axios";
 import { toast } from "sonner";
 import { verifySchema } from "@/schemas/verifySchema";
 import Link from "next/link";
+import { Loader2, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Form,
   FormField,
@@ -23,66 +31,99 @@ import { Input } from "@/components/ui/input";
 const VerifyAccount = () => {
   const router = useRouter();
   const param = useParams<{ username: string }>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<z.infer<typeof verifySchema>>({
     resolver: zodResolver(verifySchema),
+    defaultValues: {
+      code: "",
+    },
   });
 
   const onSubmit = async (data: z.infer<typeof verifySchema>) => {
     try {
+      setIsSubmitting(true);
+
       await axios.post("/api/verify-code", {
         username: param.username,
         code: data.code,
       });
 
       toast.success(
-        "Account verified successfully! Redirecting to sign in page...",
+        "Account verified. Redirecting to sign in.",
       );
       router.replace("/sign-in");
-    } catch (error) {
+    } catch {
       toast.error("Verification failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
-        <div className="text-center">
-          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-6">
-            Verify Your Account
-          </h1>
-          <p className="mb-4">Enter the verification code sent to your email</p>
-        </div>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              name="code"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Verification Code</FormLabel>
-                  <Input {...field} />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <Button type="submit" className="w-full">
-              Verify
-            </Button>
+    <main className="mx-auto flex min-h-screen w-full max-w-md items-center px-4 py-8">
+      <Card className="w-full">
+        <CardHeader>
+          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-lg border bg-card shadow-sm">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+          </div>
 
-            <div className="text-center text-sm text-muted-foreground">
-              Did not receive a code or it expired?
-            </div>
+          <CardTitle className="text-2xl">
+            Verify your account
+          </CardTitle>
 
-            <Link
-              href="/sign-up"
-              className="block text-center text-blue-600 hover:underline"
-            >
-              Sign up again
-            </Link>
-          </form>
-        </Form>
-      </div>
-    </div>
+          <CardDescription>
+            Enter the 6 digit code sent to your email for @{param.username}.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+              <FormField
+                name="code"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Verification Code</FormLabel>
+                    <Input
+                      inputMode="numeric"
+                      placeholder="123456"
+                      {...field}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Verifying
+                  </>
+                ) : (
+                  "Verify Account"
+                )}
+              </Button>
+
+              <p className="text-center text-sm text-muted-foreground">
+                Code expired?{" "}
+                <Link
+                  href="/sign-up"
+                  className="font-medium text-primary hover:underline"
+                >
+                  Sign up again
+                </Link>
+              </p>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </main>
   );
 };
 
