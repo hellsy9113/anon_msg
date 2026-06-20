@@ -2,8 +2,8 @@ import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/modal/user";
 import bcrypt from "bcrypt";
 
-import { sendVerificationEmail } from "@/helper/sendVerificationEmail";
-import { signUpSchema } from "@/schemas/signupSchema";
+import { sendVerificationEmail } from "@/features/auth/services/sendVerificationEmail";
+import { signUpSchema } from "@/features/auth/schemas/signupSchema";
 import { NextResponse } from "next/server";
 
 //it is necssry to name the name the function post.as  route files use named export to

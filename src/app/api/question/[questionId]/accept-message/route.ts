@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import QuesModel from "@/modal/question";
-import { acceptMessageSchema } from "@/schemas/acceptMessageSchema";
+import { acceptMessageSchema } from "@/features/messages/schemas/acceptMessageSchema";
 
 export async function GET(
   request: Request,

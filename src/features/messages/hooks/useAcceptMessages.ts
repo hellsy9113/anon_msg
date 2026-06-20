@@ -1,8 +1,12 @@
 import { useState, useCallback } from "react";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { toast } from "sonner";
 
 import { ApiResponse } from "@/types/ApiResponse";
+import {
+  fetchAcceptMessagesStatus,
+  updateAcceptMessagesStatus,
+} from "@/features/messages/services/messages.service";
 
 export function useAcceptMessages() {
   const [acceptMessages, setAcceptMessages] =
@@ -17,12 +21,10 @@ export function useAcceptMessages() {
         setLoading(true);
 
         const response =
-          await axios.get<ApiResponse>(
-            "/api/accept-message"
-          );
+          await fetchAcceptMessagesStatus();
 
         setAcceptMessages(
-          response.data.isAcceptingMessage ??
+          response.isAcceptingMessage ??
             true
         );
       } catch (error) {
@@ -44,17 +46,14 @@ export function useAcceptMessages() {
         setLoading(true);
 
         const response =
-          await axios.post<ApiResponse>(
-            "/api/accept-message",
-            {
-              acceptMessages: checked,
-            }
+          await updateAcceptMessagesStatus(
+            checked
           );
 
         setAcceptMessages(checked);
 
         toast.success(
-          response.data.message
+          response.message
         );
       } catch (error) {
         const axiosError =

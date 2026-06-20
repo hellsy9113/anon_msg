@@ -1,9 +1,12 @@
 import { useCallback, useState } from "react";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { toast } from "sonner";
 
 import { Message } from "@/modal/user";
 import { ApiResponse } from "@/types/ApiResponse";
+import {
+  fetchInboxMessages,
+} from "@/features/messages/services/messages.service";
 
 export function useMessages() {
   const [messages, setMessages] =
@@ -18,12 +21,10 @@ export function useMessages() {
         setLoading(true);
 
         const response =
-          await axios.get<ApiResponse>(
-            "/api/get-messages"
-          );
+          await fetchInboxMessages();
 
         setMessages(
-          response.data.messages || []
+          response.messages || []
         );
 
         if (refresh) {

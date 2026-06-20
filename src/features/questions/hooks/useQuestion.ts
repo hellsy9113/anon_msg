@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import axios, { isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import { toast } from "sonner";
 
-import { Question } from "@/types/Question";
+import { Question } from "@/features/questions/types/question";
+import {
+  fetchQuestionById,
+  fetchQuestionsList,
+} from "@/features/questions/services/questions.service";
 
 export function useQuestions() {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -12,12 +16,11 @@ export function useQuestions() {
     try {
       setLoading(true);
 
-      const response = await axios.get(
-        "/api/fetch-questions"
-      );
+      const response =
+        await fetchQuestionsList();
   
       setQuestions(
-        response.data.questions || []
+        response.questions || []
       );
     } catch (error) {
       if (isAxiosError(error)) {
@@ -43,11 +46,6 @@ export function useQuestions() {
   };
 }
 
-interface QuestionResponse{
-  success:boolean;
-  question:Question;
-}
-
 export function useQuestion(questionId:string)
 {
   const[question,setQuestion]=
@@ -64,10 +62,9 @@ export function useQuestion(questionId:string)
         setLoading(true);
       }
 
-      const response=await axios.get<QuestionResponse>(
-        `/api/question/${questionId}`
-      );
-      setQuestion(response.data.question);
+      const response =
+        await fetchQuestionById(questionId);
+      setQuestion(response.question);
 
     }
     catch (error) {

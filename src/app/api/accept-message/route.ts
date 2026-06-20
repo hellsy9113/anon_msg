@@ -2,7 +2,7 @@ import {getServerSession, User} from "next-auth"
 import {authOptions}  from "../auth/[...nextauth]/options"
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/modal/user";
-import { acceptMessageSchema } from "@/schemas/acceptMessageSchema";
+import { acceptMessageSchema } from "@/features/messages/schemas/acceptMessageSchema";
 
 export async function POST(request: Request) {
   await dbConnect();

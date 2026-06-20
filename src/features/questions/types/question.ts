@@ -8,3 +8,9 @@ export interface Question {
   totalMessages: number;
   messages: Message[];
 }
+
+export interface PublicQuestion {
+  _id: string;
+  content: string;
+  isAcceptingMessage: boolean;
+}

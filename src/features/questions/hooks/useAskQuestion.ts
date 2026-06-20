@@ -1,16 +1,18 @@
 import {  useState } from "react";
-import axios, {  isAxiosError } from "axios";
+import {  isAxiosError } from "axios";
 import { toast } from "sonner";
+import {
+  createQuestion,
+} from "@/features/questions/services/questions.service";
 export function useAskQuestion() {
   const [loading, setLoading] = useState(false);
   const askQuestion = async (content: string) => {
     try {
       setLoading(true);
-      const response = await axios.post("/api/ask-question", {
-        content,
-      });
+      const response =
+        await createQuestion(content);
 
-      toast.success(response.data.message);
+      toast.success(response.message);
       return true;
     } catch (error) {
       const axiosError = error;
